@@ -24,7 +24,7 @@ public class GreedyCSSMapper extends
 			throws java.io.IOException, InterruptedException {
 
 		String sampleStr = value.toString();
-		String[] ftrs = sampleStr.split(",");
+		String[] ftrs = sampleStr.split("-");
 		int offset = 0;
 		int lastIndex = numPartions - 1;
 		for (int i = 0; i < lastIndex; i++) {
