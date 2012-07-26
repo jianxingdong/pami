@@ -3,6 +3,7 @@ package ca.uwaterloo.cpami.css.greedy.mapreduce.rowpersample;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
@@ -47,8 +48,11 @@ public class PartitionSelectionReducer extends
 
 		// apply local Greedy subset selection
 		// the partition-based approach is not used for now
+
+		// TODO: code optimisation might be needed here
 		Integer[] selectedColumns = new GreedyColSubsetSelection()
-				.selectColumnSubset(dataMatrix, dataMatrix, k);
+				.selectColumnSubset(new Array2DRowRealMatrix(dataMatrix),
+						new Array2DRowRealMatrix(dataMatrix), k);
 		// writing the selected indices & columns
 		for (Integer col : selectedColumns) {
 			context.write((IntWritable) indices[col],
