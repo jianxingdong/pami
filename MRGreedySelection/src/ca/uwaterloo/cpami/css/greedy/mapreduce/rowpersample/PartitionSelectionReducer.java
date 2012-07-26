@@ -3,7 +3,7 @@ package ca.uwaterloo.cpami.css.greedy.mapreduce.rowpersample;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -11,12 +11,12 @@ import org.apache.hadoop.mapreduce.Reducer;
 import ca.uwaterloo.cpami.css.greedy.core.GreedyColSubsetSelection;
 
 public class PartitionSelectionReducer extends
-		Reducer<IntWritable, SamplePartition, IntWritable, IntWritable> {
+		Reducer<IntWritable, SamplePartition, IntWritable, ArrayWritable> {
 
 	private int k;
 
 	protected void setup(
-			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, IntWritable>.Context context)
+			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, ArrayWritable>.Context context)
 			throws java.io.IOException, InterruptedException {
 		this.k = context.getConfiguration().getInt("partitionSubsetSize", 0);
 	};
@@ -24,7 +24,7 @@ public class PartitionSelectionReducer extends
 	protected void reduce(
 			IntWritable key,
 			java.lang.Iterable<SamplePartition> partition,
-			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, IntWritable>.Context context)
+			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, ArrayWritable>.Context context)
 			throws java.io.IOException, InterruptedException {
 
 		// building the matrix
@@ -36,7 +36,7 @@ public class PartitionSelectionReducer extends
 			if (sp.isIndices()) {
 				indices = sp.getColIndices();
 			} else {
-				samples.add(toNativeDoubleArray(sp.getSamplePart()));
+				samples.add(Utils.toNativeDoubleArray(sp.getSamplePart()));
 			}
 		}
 
@@ -50,17 +50,10 @@ public class PartitionSelectionReducer extends
 		Integer[] selectedColumns = new GreedyColSubsetSelection()
 				.selectColumnSubset(dataMatrix, dataMatrix, k);
 		// writing the selected indices & columns
-		// TODO
-		i = 0;
 		for (Integer col : selectedColumns) {
-			context.write(new IntWritable(++i), new IntWritable(col));
+			context.write((IntWritable) indices[col],
+					Utils.getColumn(dataMatrix, col));
 		}
 	};
 
-	private double[] toNativeDoubleArray(Writable[] hdbArray) {
-		double[] nativeArray = new double[hdbArray.length];
-		for (int i = 0; i < hdbArray.length; i++)
-			nativeArray[i] = ((DoubleWritable) hdbArray[i]).get();
-		return nativeArray;
-	}
 }

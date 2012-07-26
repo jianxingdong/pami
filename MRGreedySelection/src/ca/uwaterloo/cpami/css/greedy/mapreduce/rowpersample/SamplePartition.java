@@ -44,11 +44,12 @@ public class SamplePartition implements Writable {
 	public void readFields(DataInput dis) throws IOException {
 		isIndices = dis.readBoolean();
 		if (isIndices) {
+			colIndices = new ArrayWritable(IntWritable.class);
 			colIndices.readFields(dis);
 		} else {
+			samplePart = new ArrayWritable(DoubleWritable.class);
 			samplePart.readFields(dis);
 		}
-
 	}
 
 	@Override

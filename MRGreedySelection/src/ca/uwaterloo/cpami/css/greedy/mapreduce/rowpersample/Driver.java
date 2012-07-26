@@ -18,7 +18,8 @@ public class Driver {
 		getPartitionSelectionJob(originalDataFile, tempSelectionFile,
 				numPartitions, numColumns, k, l).waitForCompletion(true);
 
-		getFinalSelectionJob(tempSelectionFile, selectedColumnsFile);
+		getFinalSelectionJob(tempSelectionFile, selectedColumnsFile, k)
+				.waitForCompletion(true);
 	}
 
 	private Job getPartitionSelectionJob(String originalDataFile,
@@ -43,8 +44,10 @@ public class Driver {
 	}
 
 	private Job getFinalSelectionJob(String tempSelectionFile,
-			String selectedColumnsFile) throws IOException {
-		Job job = new Job(new Configuration());
+			String selectedColumnsFile, int k) throws IOException {
+		Configuration config = new Configuration();
+		config.setInt("subsetSize", k);
+		Job job = new Job(config);
 		job.setJarByClass(Driver.class);
 		FileInputFormat.addInputPaths(job, tempSelectionFile);
 		FileOutputFormat.setOutputPath(job, new Path(selectedColumnsFile));
