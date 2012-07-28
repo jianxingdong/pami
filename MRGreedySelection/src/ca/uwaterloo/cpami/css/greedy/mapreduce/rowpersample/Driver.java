@@ -4,16 +4,20 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 public class Driver {
 
 	public void run(String originalDataFile, String tempSelectionFile,
 			int numPartitions, String selectedColumnsFile, int numColumns,
-			int k, int l) throws IOException, InterruptedException,
+			int k, float l) throws IOException, InterruptedException,
 			ClassNotFoundException {
 		getPartitionSelectionJob(originalDataFile, tempSelectionFile,
 				numPartitions, numColumns, k, l).waitForCompletion(true);
@@ -24,10 +28,10 @@ public class Driver {
 
 	private Job getPartitionSelectionJob(String originalDataFile,
 			String tempSelectionFile, int numPartitions, int numColumns, int k,
-			int l) throws IOException {
+			float l) throws IOException {
 		Configuration config = new Configuration();
-		config.setInt("partitionSubsetSize", numColumns / numPartitions
-				* (1 + l));
+		config.setInt("partitionSubsetSize",
+				(int) (k / numPartitions * (1 + l)));
 		config.setInt("numPartitions", numPartitions);
 		config.setInt("numColumns", numColumns);
 
@@ -38,8 +42,10 @@ public class Driver {
 		job.setMapperClass(PartitionSelectionMapper.class);
 		job.setReducerClass(PartitionSelectionReducer.class);
 		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(IntWritable.class);
+		job.setOutputValueClass(DoubleArrayWritable.class);
+		job.setMapOutputValueClass(SamplePartition.class);
 		job.setNumReduceTasks(numPartitions);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 		return job;
 	}
 
@@ -51,10 +57,13 @@ public class Driver {
 		job.setJarByClass(Driver.class);
 		FileInputFormat.addInputPaths(job, tempSelectionFile);
 		FileOutputFormat.setOutputPath(job, new Path(selectedColumnsFile));
-		job.setMapperClass(PartitionSelectionMapper.class);
-		job.setReducerClass(PartitionSelectionReducer.class);
+		job.setMapperClass(FinalSelectionMapper.class);
+		job.setReducerClass(FinalSelectionReducer.class);
 		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(IntWritable.class);
+		job.setOutputValueClass(ArrayWritable.class);
+		job.setMapOutputValueClass(SelectedColumn.class);
+		job.setInputFormatClass(SequenceFileInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
 		job.setNumReduceTasks(1);
 		return job;
 	}
@@ -74,7 +83,7 @@ public class Driver {
 			InterruptedException, ClassNotFoundException {
 		new Driver().run(args[0], args[1], Integer.parseInt(args[2]), args[3],
 				Integer.parseInt(args[4]), Integer.parseInt(args[5]),
-				Integer.parseInt(args[6]));
+				Float.parseFloat(args[6]));
 	}
 
 }

@@ -5,20 +5,19 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 
 public class SelectedColumn implements Writable {
 
 	private IntWritable columnIndex;
-	private ArrayWritable column;
+	private DoubleArrayWritable column;
 
 	public SelectedColumn() {
 
 	}
 
-	public SelectedColumn(IntWritable columnIndex, ArrayWritable column) {
+	public SelectedColumn(IntWritable columnIndex, DoubleArrayWritable column) {
 		this.columnIndex = columnIndex;
 		this.column = column;
 	}
@@ -35,7 +34,7 @@ public class SelectedColumn implements Writable {
 	public void readFields(DataInput dis) throws IOException {
 		columnIndex = new IntWritable();
 		columnIndex.readFields(dis);
-		column = new ArrayWritable(DoubleWritable.class);
+		column = new DoubleArrayWritable();
 		column.readFields(dis);
 	}
 

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -12,12 +11,12 @@ import org.apache.hadoop.mapreduce.Reducer;
 import ca.uwaterloo.cpami.css.greedy.core.GreedyColSubsetSelection;
 
 public class PartitionSelectionReducer extends
-		Reducer<IntWritable, SamplePartition, IntWritable, ArrayWritable> {
+		Reducer<IntWritable, SamplePartition, IntWritable, DoubleArrayWritable> {
 
 	private int k;
 
 	protected void setup(
-			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, ArrayWritable>.Context context)
+			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, DoubleArrayWritable>.Context context)
 			throws java.io.IOException, InterruptedException {
 		this.k = context.getConfiguration().getInt("partitionSubsetSize", 0);
 	};
@@ -25,7 +24,7 @@ public class PartitionSelectionReducer extends
 	protected void reduce(
 			IntWritable key,
 			java.lang.Iterable<SamplePartition> partition,
-			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, ArrayWritable>.Context context)
+			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, DoubleArrayWritable>.Context context)
 			throws java.io.IOException, InterruptedException {
 
 		// building the matrix
@@ -35,6 +34,7 @@ public class PartitionSelectionReducer extends
 		while (itr.hasNext()) {
 			SamplePartition sp = itr.next();
 			if (sp.isIndices()) {
+				System.out.println("indices ====");
 				indices = sp.getColIndices();
 			} else {
 				samples.add(Utils.toNativeDoubleArray(sp.getSamplePart()));

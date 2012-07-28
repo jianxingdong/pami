@@ -21,6 +21,8 @@ public class PartitionSelectionMapper extends
 				.getInt("numColumns", 0) / this.numPartitions;
 	};
 
+	private boolean isFirstPair = true;
+
 	protected void map(
 			LongWritable key,
 			Text value,
@@ -31,28 +33,30 @@ public class PartitionSelectionMapper extends
 		String[] ftrs = sampleStr.split(",");
 		int offset = 0;
 		int lastIndex = numPartitions - 1;
-		boolean isFirstMapper = context.getConfiguration().get("mapred.tip.id") == "0";
+		boolean isFirstMap = isFirstPair
+				&& context.getTaskAttemptID().getId() == 0;
 		for (int i = 0; i < lastIndex; i++) {
 
 			context.write(new IntWritable(i),
 					getSamplePartition(ftrs, offset, numColsPerPart, false));
+			
 			// only the first mapper sends the indices of the columns of each
 			// partition
-			if (isFirstMapper) {
+			if (isFirstMap) {
 				context.write(
 						new IntWritable(i),
 						getColIndices(offset, numColsPerPart, false,
 								ftrs.length));
 			}
 			offset += numColsPerPart;
-			if (isFirstMapper) {
-				context.write(
-						new IntWritable(i),
-						getColIndices(offset, numColsPerPart, true, ftrs.length));
-			}
 		}
 		context.write(new IntWritable(lastIndex),
 				getSamplePartition(ftrs, offset, numColsPerPart, true));
+		if (isFirstMap) {
+			context.write(new IntWritable(lastIndex),
+					getColIndices(offset, numColsPerPart, true, ftrs.length));
+		}
+		isFirstPair = false;
 	};
 
 	private SamplePartition getSamplePartition(String[] features, int offset,
