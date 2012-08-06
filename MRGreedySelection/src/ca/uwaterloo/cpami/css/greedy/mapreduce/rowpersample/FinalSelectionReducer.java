@@ -35,8 +35,10 @@ public class FinalSelectionReducer extends
 		while (colsItr.hasNext()) {
 			SelectedColumn sc = colsItr.next();
 			indices.add(sc.getColumnIndex().get());
+			System.out.println("index: " + sc.getColumnIndex().get());
 			columnsList.add(sc.getColumn());
 		}
+		System.out.println(indices);
 
 		Array2DRowRealMatrix dataMatrix = new Array2DRowRealMatrix(columnsList
 				.get(0).get().length, columnsList.size());

@@ -19,6 +19,7 @@ public class PartitionSelectionMapper extends
 				0);
 		this.numColsPerPart = context.getConfiguration()
 				.getInt("numColumns", 0) / this.numPartitions;
+
 	};
 
 	private boolean isFirstPair = true;
@@ -39,7 +40,7 @@ public class PartitionSelectionMapper extends
 
 			context.write(new IntWritable(i),
 					getSamplePartition(ftrs, offset, numColsPerPart, false));
-			
+
 			// only the first mapper sends the indices of the columns of each
 			// partition
 			if (isFirstMap) {

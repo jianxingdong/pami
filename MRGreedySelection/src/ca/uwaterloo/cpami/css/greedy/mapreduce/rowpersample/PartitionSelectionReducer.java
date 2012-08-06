@@ -34,14 +34,18 @@ public class PartitionSelectionReducer extends
 		while (itr.hasNext()) {
 			SamplePartition sp = itr.next();
 			if (sp.isIndices()) {
-				System.out.println("indices ====");
 				indices = sp.getColIndices();
 			} else {
 				samples.add(Utils.toNativeDoubleArray(sp.getSamplePart()));
 			}
 		}
 
-		double[][] dataMatrix = new double[samples.size()][];
+		for (Writable i : indices) {
+			System.out.print(i + ",");
+		}
+		System.out.println();
+
+		double[][] dataMatrix = new double[samples.size()][indices.length];
 		int i = 0;
 		for (double[] sample : samples)
 			dataMatrix[i++] = sample;
@@ -54,10 +58,13 @@ public class PartitionSelectionReducer extends
 				.selectColumnSubset(new Array2DRowRealMatrix(dataMatrix),
 						new Array2DRowRealMatrix(dataMatrix), k);
 		// writing the selected indices & columns
+		System.out.println("selected");
 		for (Integer col : selectedColumns) {
+			System.out.print(col+",");
 			context.write((IntWritable) indices[col],
 					Utils.getColumn(dataMatrix, col));
 		}
+		System.out.println();
 	};
 
 }

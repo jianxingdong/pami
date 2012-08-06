@@ -1,5 +1,6 @@
 package ca.uwaterloo.cpami.css.greedy.mapreduce.rowpersample;
 
+
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -8,9 +9,8 @@ import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 public class Driver {
@@ -45,7 +45,8 @@ public class Driver {
 		job.setOutputValueClass(DoubleArrayWritable.class);
 		job.setMapOutputValueClass(SamplePartition.class);
 		job.setNumReduceTasks(numPartitions);
-		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+//		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
 		return job;
 	}
 
@@ -62,7 +63,8 @@ public class Driver {
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(ArrayWritable.class);
 		job.setMapOutputValueClass(SelectedColumn.class);
-		job.setInputFormatClass(SequenceFileInputFormat.class);
+		//job.setInputFormatClass(SequenceFileInputFormat.class);
+		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		job.setNumReduceTasks(1);
 		return job;

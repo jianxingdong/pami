@@ -97,7 +97,8 @@ public class GreedyColSubsetSelection {
 
 			f = (Array2DRowRealMatrix) f.subtract(
 					getHadamardProduct(w, r1.subtract(r2)).scalarMultiply(2))
-					.add(r3.scalarMultiply(Math.pow(v.getNorm(), 2)));
+					.add(r3.scalarMultiply(Math.pow(v.getColumnVector(0)
+							.getNorm(), 2)));			
 
 			f.setEntry(l, 0, 0);
 			g = g.subtract(r3);
@@ -109,8 +110,8 @@ public class GreedyColSubsetSelection {
 				if (g.getEntry(i, 0) < 1e-10)
 					g.setEntry(i, 0, 0);
 			}
-
 		}
+
 		return selectedIndices.toArray(new Integer[] {});
 	}
 
@@ -134,7 +135,6 @@ public class GreedyColSubsetSelection {
 				maxIndex = i;
 			}
 		}
-		System.out.println(currMax);
 		return (currMax == 0) ? -1 : maxIndex;
 	}
 
@@ -162,7 +162,10 @@ public class GreedyColSubsetSelection {
 	}
 
 	public static void main(String[] args) throws IOException {
-		double[][] a = Utilis.loadMatrix("data/A.txt", ",");
+		double[][] a = Utilis
+				.loadMatrix(
+						"/home/ahmed/Desktop/ICDM13/dataset/docword.nips.fullmatrix_1k.txt",
+						",");
 		Integer[] cols = new GreedyColSubsetSelection().selectColumnSubset(
 				new Array2DRowRealMatrix(a), new Array2DRowRealMatrix(a), 10);
 		for (int i = 0; i < 10; i++)
