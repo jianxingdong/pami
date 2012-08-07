@@ -98,7 +98,7 @@ public class GreedyColSubsetSelection {
 			f = (Array2DRowRealMatrix) f.subtract(
 					getHadamardProduct(w, r1.subtract(r2)).scalarMultiply(2))
 					.add(r3.scalarMultiply(Math.pow(v.getColumnVector(0)
-							.getNorm(), 2)));			
+							.getNorm(), 2)));
 
 			f.setEntry(l, 0, 0);
 			g = g.subtract(r3);
@@ -145,7 +145,7 @@ public class GreedyColSubsetSelection {
 		int m = A.getRowDimension();
 		int n = A.getColumnDimension();
 		Array2DRowRealMatrix result = new Array2DRowRealMatrix(m, n);
-		for (int i = 0; i < m; i++) {
+			for (int i = 0; i < m; i++) {
 			for (int j = 0; j < n; j++) {
 				result.setEntry(i, j, A.getEntry(i, j) * B.getEntry(i, j));
 			}
@@ -164,11 +164,20 @@ public class GreedyColSubsetSelection {
 	public static void main(String[] args) throws IOException {
 		double[][] a = Utilis
 				.loadMatrix(
-						"/home/ahmed/Desktop/ICDM13/dataset/docword.nips.fullmatrix_1k.txt",
+						"/home/ahmed/Desktop/ICDM13/dataset/docword.nips.fullmatrix_final.txt",
 						",");
+		/*for (int i = 0; i < 1000; i++) {
+			int s = 0;
+			for (int j = 0; j < 1500; j++) {
+				s += a[j][i];
+			}
+			System.out.println(s);
+		}
+		System.exit(1);
+		*/
 		Integer[] cols = new GreedyColSubsetSelection().selectColumnSubset(
-				new Array2DRowRealMatrix(a), new Array2DRowRealMatrix(a), 10);
-		for (int i = 0; i < 10; i++)
+				new Array2DRowRealMatrix(a), new Array2DRowRealMatrix(a), 100);
+		for (int i = 0; i < 100; i++)
 			System.out.print(cols[i] + " ");
 	}
 

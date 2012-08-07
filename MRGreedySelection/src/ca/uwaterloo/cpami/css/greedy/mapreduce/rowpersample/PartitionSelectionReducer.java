@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -40,11 +41,6 @@ public class PartitionSelectionReducer extends
 			}
 		}
 
-		for (Writable i : indices) {
-			System.out.print(i + ",");
-		}
-		System.out.println();
-
 		double[][] dataMatrix = new double[samples.size()][indices.length];
 		int i = 0;
 		for (double[] sample : samples)
@@ -53,18 +49,16 @@ public class PartitionSelectionReducer extends
 		// apply local Greedy subset selection
 		// the partition-based approach is not used for now
 
-		// TODO: code optimisation might be needed here
+		// TODO: code optimization might be needed here
 		Integer[] selectedColumns = new GreedyColSubsetSelection()
 				.selectColumnSubset(new Array2DRowRealMatrix(dataMatrix),
 						new Array2DRowRealMatrix(dataMatrix), k);
 		// writing the selected indices & columns
-		System.out.println("selected");
 		for (Integer col : selectedColumns) {
-			System.out.print(col+",");
+
 			context.write((IntWritable) indices[col],
 					Utils.getColumn(dataMatrix, col));
 		}
-		System.out.println();
-	};
+	}
 
 }
