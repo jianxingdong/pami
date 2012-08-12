@@ -79,7 +79,7 @@ public class UCIBOWRowPerSamplePrep {
 
 	public static void main(String[] args) throws IOException {
 		new UCIBOWRowPerSamplePrep().convert(
-				"/home/ahmed/Desktop/ICDM13/datasets/docword.pubmed.txt",
-				"/home/ahmed/Desktop/ICDM13/datasets/pubmed-rowpersample.txt");
+				"/home/ahmed/Desktop/ICDM13/dataset/docword.pubmed.txt",
+				"/home/ahmed/Desktop/ICDM13/dataset/pubmed-rowpersample.txt");
 	}
 }

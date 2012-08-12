@@ -164,7 +164,7 @@ public class GreedyColSubsetSelection {
 	public static void main(String[] args) throws IOException {
 		double[][] a = Utilis
 				.loadMatrix(
-						"/home/ahmed/Desktop/ICDM13/dataset/docword.nips.fullmatrix_final.txt",
+						"/home/ahmed/Desktop/ICDM13/dataset/kos-full.txt",
 						",");
 		/*for (int i = 0; i < 1000; i++) {
 			int s = 0;
@@ -175,6 +175,10 @@ public class GreedyColSubsetSelection {
 		}
 		System.exit(1);
 		*/
+		Array2DRowRealMatrix x = new Array2DRowRealMatrix(a);
+		System.out.println(x.getColumnDimension());
+		System.out.println(x.getRowDimension());
+		System.exit(0);
 		Integer[] cols = new GreedyColSubsetSelection().selectColumnSubset(
 				new Array2DRowRealMatrix(a), new Array2DRowRealMatrix(a), 100);
 		for (int i = 0; i < 100; i++)
