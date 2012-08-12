@@ -16,10 +16,10 @@ for c in range(0,int(math.ceil(float(numWords)/chunkSize))):
             skip = skip +1
             continue
         parts = line.split()
-        wordId = parts[1] 
-        docId = parts[0]
+        wordId = int(parts[1])
+        docId = int(parts[0])
         if wordId >=wordOffset and wordId<wordOffset+chunkSize:    
-            vctrs[wordId-wordOffset][docId-1] = parts[2]
+            vctrs[wordId-wordOffset][docId-1] = int(parts[2])
 
     #writing the word vectors
     for i in range (0, chunkSize):
