@@ -15,7 +15,7 @@ import org.apache.mahout.math.hadoop.stochasticsvd.SSVDSolver;
 import ca.uwaterloo.cpami.css.dataprep.CSVToSequenceFile;
 import ca.uwaterloo.cpami.css.dataprep.SequenceFileToCSV;
 
-public class SVD {
+public class StochasticSVD {
 
 	/**
 	 * args[0] parameters file path
