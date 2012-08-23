@@ -8,6 +8,7 @@ import java.util.Iterator;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -19,6 +20,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
@@ -64,15 +66,20 @@ public class TransposeAndTimesDiagonal {
 		protected void setup(
 				org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, ElementWritable>.Context context)
 				throws IOException, InterruptedException {
+			// reading the diagonal from HDFS
 			final Configuration conf = new Configuration();
 			final FileSystem fs = FileSystem.get(conf);
-			FSDataInputStream in = fs.open(new Path(""));
+			FSDataInputStream in = fs.open(new Path(context.getConfiguration()
+					.get("diagonalFilePath")));
+			diagonal = new DenseVector(context.getConfiguration().getInt(
+					"diagonalLength", 0));
 			try {
+				int i = 0;
 				while (true) {
-					
+					diagonal.set(i++, in.readDouble());
 				}
 			} catch (EOFException eof) {
-
+				in.close();
 			}
 
 		};
@@ -126,7 +133,7 @@ public class TransposeAndTimesDiagonal {
 	}
 
 	// test
-	public static void main(String[] args) throws IOException,
+	public static void main_(String[] args) throws IOException,
 			InterruptedException, ClassNotFoundException {
 
 		CSVToSequenceFile.csvToSequenceFile("/inv/inv-test.txt", ",", 100,
@@ -136,8 +143,19 @@ public class TransposeAndTimesDiagonal {
 			diag.set(i, 1);
 		diag.set(1, 2);
 
+		final Configuration conf = new Configuration();
+		final FileSystem fs = FileSystem.get(conf);
+		FSDataOutputStream out = fs.create(new Path("/inv/D"));
+		Iterator<Vector.Element> itr = diag.iterator();
+		while (itr.hasNext())
+			out.writeDouble(itr.next().get());
+		out.close();
+
 		Configuration config = new Configuration();
 		config.setInt("cardinality", 100);
+		config.setInt("diagonalLength", 100);
+		config.setStrings("diagonalFilePath", "/inv/D");
+
 		Job job = new Job(config);
 		job.setJarByClass(TransposeAndTimesDiagonal.class);
 		FileInputFormat.addInputPaths(job, "/inv/U");
