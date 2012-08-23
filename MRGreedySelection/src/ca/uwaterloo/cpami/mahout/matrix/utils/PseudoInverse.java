@@ -1,6 +1,8 @@
 package ca.uwaterloo.cpami.mahout.matrix.utils;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -8,6 +10,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.hadoop.DistributedRowMatrix;
 import org.apache.mahout.math.hadoop.stochasticsvd.SSVDSolver;
+
+import ca.uwaterloo.cpami.css.dataprep.SequenceFileToCSV;
 
 /**
  * 
@@ -17,6 +21,7 @@ import org.apache.mahout.math.hadoop.stochasticsvd.SSVDSolver;
  * @see http://en.wikipedia.org/wiki/Moore-Penrose_pseudoinverse#
  *      Singular_value_decomposition_.28SVD.29
  * 
+ *      TODO: take a tmp directory as a parameter
  */
 public class PseudoInverse {
 
@@ -32,6 +37,11 @@ public class PseudoInverse {
 	// when applicable
 	private int numReducers;
 
+	/**
+	 * 
+	 * @param numReducers
+	 *            : when applicable
+	 */
 	public void setNumReducers(int numReducers) {
 		this.numReducers = numReducers;
 	}
@@ -45,7 +55,7 @@ public class PseudoInverse {
 		SSVDSolver ssvdSolver = new SSVDSolver(new Configuration(), matrixPath,
 				new Path(TMP_SSVD_OUTPUT_PATH), aBlockRows, k, SSVD_P,
 				numReducers);
-		// to obtain good accuracy
+		// for a good accuracy
 		ssvdSolver.setQ(1);
 
 		ssvdSolver.run();
@@ -61,8 +71,9 @@ public class PseudoInverse {
 		transposeAndTimesDiagonal(ssvdSolver.getUPath(), sValuesInverted, k,
 				TMP_R_PATH);
 
-		return V.times(new DistributedRowMatrix(rPath,
+		DistributedRowMatrix result = V.times(new DistributedRowMatrix(rPath,
 				new Path(TMP_R_OUT_PATH), k, numRows));
+		return result;
 	}
 
 	/**
@@ -104,6 +115,17 @@ public class PseudoInverse {
 				v.set(i, 1 / vi);
 		}
 		return null;
+	}
+
+	public static void main(String[] args) throws IllegalArgumentException,
+			SecurityException, IOException, InterruptedException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException, InvocationTargetException,
+			NoSuchMethodException {
+
+		DistributedRowMatrix mat = new DistributedRowMatrix(new Path("/inv/R"),
+				new Path("/tmp/R"), 99, 99);
+		mat.transpose();
 	}
 
 }

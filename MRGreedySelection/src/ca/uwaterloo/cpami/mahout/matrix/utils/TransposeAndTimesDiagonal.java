@@ -175,10 +175,10 @@ public class TransposeAndTimesDiagonal {
 	public static void main(String[] args) throws IOException,
 			InterruptedException, ClassNotFoundException {
 
-		CSVToSequenceFile.csvToSequenceFile("/inv/inv-test.txt", ",", 100,
+		CSVToSequenceFile.csvToSequenceFile("/inv/inv-test.txt", ",", 99,
 				"/inv/U");
-		Vector diag = new SequentialAccessSparseVector(100);
-		for (int i = 0; i < 100; i += 10)
+		Vector diag = new SequentialAccessSparseVector(99);
+		for (int i = 0; i < 99; i += 10)
 			diag.set(i, 1);
 		diag.set(1, 2);
 
@@ -191,8 +191,8 @@ public class TransposeAndTimesDiagonal {
 		out.close();
 
 		Configuration config = new Configuration();
-		config.setInt("cardinality", 100);
-		config.setInt("diagonalLength", 100);
+		config.setInt("cardinality", 99);
+		config.setInt("diagonalLength", 99);
 		config.setStrings("diagonalFilePath", "/inv/D");
 
 		Job job = new Job(config);
@@ -206,7 +206,7 @@ public class TransposeAndTimesDiagonal {
 		job.setMapOutputValueClass(ElementWritable.class);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-		job.setNumReduceTasks(1);
+		job.setNumReduceTasks(2);
 		job.waitForCompletion(true);
 		System.out.println("DONE--> Converting To CSV");
 		SequenceFileToCSV.sequenceFileToCSV("/inv/R", "/inv/R.csv", ",");
