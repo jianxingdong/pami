@@ -40,6 +40,9 @@ public class TransposeAndTimesDiagonal {
 		double value;
 		int index;
 
+		public ElementWritable() {
+		}
+
 		public ElementWritable(double value, int index) {
 			this.value = value;
 			this.index = index;
@@ -58,7 +61,7 @@ public class TransposeAndTimesDiagonal {
 		}
 	}
 
-	public class TTDMapper extends
+	public static class TTDMapper extends
 			Mapper<IntWritable, VectorWritable, IntWritable, ElementWritable> {
 
 		private Vector diagonal;
@@ -132,8 +135,44 @@ public class TransposeAndTimesDiagonal {
 		};
 	}
 
+	public void run(Vector diagonal, String tmpPath, String matrixPath,
+			String resultMatrixPath, int matrixCardinality, int numReducers)
+			throws IOException, InterruptedException, ClassNotFoundException {
+
+		// writing the diagonal to HDFS
+		final Configuration conf = new Configuration();
+		final FileSystem fs = FileSystem.get(conf);
+		FSDataOutputStream out = fs.create(new Path(tmpPath));
+		Iterator<Vector.Element> itr = diagonal.iterator();
+		while (itr.hasNext())
+			out.writeDouble(itr.next().get());
+		out.close();
+
+		//launching the job
+		Configuration config = new Configuration();
+		config.setInt("cardinality", matrixCardinality);
+		config.setInt("diagonalLength", matrixCardinality);
+		config.setStrings("diagonalFilePath", tmpPath);
+
+		Job job = new Job(config);
+		job.setJarByClass(TransposeAndTimesDiagonal.class);
+		FileInputFormat.addInputPaths(job, matrixPath);
+		FileOutputFormat.setOutputPath(job, new Path(resultMatrixPath));
+		job.setMapperClass(TTDMapper.class);
+		job.setReducerClass(TTDReducer.class);
+		job.setOutputKeyClass(IntWritable.class);
+		job.setOutputValueClass(VectorWritable.class);
+		job.setMapOutputValueClass(ElementWritable.class);
+		job.setInputFormatClass(SequenceFileInputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+		job.setNumReduceTasks(numReducers);
+		job.waitForCompletion(true);
+
+		
+	}
+
 	// test
-	public static void main_(String[] args) throws IOException,
+	public static void main(String[] args) throws IOException,
 			InterruptedException, ClassNotFoundException {
 
 		CSVToSequenceFile.csvToSequenceFile("/inv/inv-test.txt", ",", 100,
@@ -170,7 +209,7 @@ public class TransposeAndTimesDiagonal {
 		job.setNumReduceTasks(1);
 		job.waitForCompletion(true);
 		System.out.println("DONE--> Converting To CSV");
-		SequenceFileToCSV.sequenceFileToCSV("/inv/R", "inv/R.csv", ",");
+		SequenceFileToCSV.sequenceFileToCSV("/inv/R", "/inv/R.csv", ",");
 
 	}
 }

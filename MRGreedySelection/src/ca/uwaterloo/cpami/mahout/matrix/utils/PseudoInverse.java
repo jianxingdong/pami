@@ -22,16 +22,21 @@ public class PseudoInverse {
 
 	private static final String TMP_SSVD_OUTPUT_PATH = "/tmp/inv-ssvd-tmp-path";
 	private static final int SSVD_P = 15;
-	private static final int SSVD_REDUCE_TASKS = 3; // TODO to be tuned
-													// depending on the cluster
-													// size
 
 	private static final double JVM_EPS = 1.1 * 10e-16;
 	private static final String TMP_V_OUT_PATH = "/tmp/v-tmp-out-path";
 	private static final String TMP_R_PATH = "/tmp/r-tmp-path";
 	private static final String TMP_R_OUT_PATH = "/tmp/r-tmp-out-path";
+	private static final String TMP_TTD_PATH = "/tmp/ttd";
 
-	public static DistributedRowMatrix invert(Path[] matrixPath, int numRows,
+	// when applicable
+	private int numReducers;
+
+	public void setNumReducers(int numReducers) {
+		this.numReducers = numReducers;
+	}
+
+	public DistributedRowMatrix invert(Path[] matrixPath, int numRows,
 			int numCols) throws IOException {
 		cleanTmpDirs();
 		int k = Math.min(numRows, numCols);
@@ -39,7 +44,7 @@ public class PseudoInverse {
 											// matrix size)
 		SSVDSolver ssvdSolver = new SSVDSolver(new Configuration(), matrixPath,
 				new Path(TMP_SSVD_OUTPUT_PATH), aBlockRows, k, SSVD_P,
-				SSVD_REDUCE_TASKS);
+				numReducers);
 		// to obtain good accuracy
 		ssvdSolver.setQ(1);
 
@@ -53,8 +58,8 @@ public class PseudoInverse {
 				ssvdSolver.getUPath()), new Path(TMP_V_OUT_PATH), numCols, k);
 
 		Path rPath = new Path(TMP_R_PATH);
-		transposeAndTimesDiagonal(new Path(ssvdSolver.getUPath()),
-				sValuesInverted, k, rPath);
+		transposeAndTimesDiagonal(ssvdSolver.getUPath(), sValuesInverted, k,
+				TMP_R_PATH);
 
 		return V.times(new DistributedRowMatrix(rPath,
 				new Path(TMP_R_OUT_PATH), k, numRows));
@@ -65,9 +70,15 @@ public class PseudoInverse {
 	 * given by the vector v. This method computes a matrix R = S*U'. // TODO to
 	 * be executed over a MR job
 	 */
-	private static void transposeAndTimesDiagonal(Path uPath, Vector v, int k,
-			Path outputPath) {
-
+	private void transposeAndTimesDiagonal(String uPath, Vector v, int k,
+			String outputPath) {
+		try {
+			new TransposeAndTimesDiagonal().run(v, TMP_TTD_PATH, uPath,
+					outputPath, k, numReducers);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("TransposeAndTimesDiagonal Failed");
+		}
 	}
 
 	private static void cleanTmpDirs() throws IOException {
@@ -76,6 +87,7 @@ public class PseudoInverse {
 		fs.delete(new Path(TMP_R_OUT_PATH), true);
 		fs.delete(new Path(TMP_R_PATH), true);
 		fs.delete(new Path(TMP_V_OUT_PATH), true);
+		fs.delete(new Path(TMP_TTD_PATH), true);
 	}
 
 	/**
