@@ -115,7 +115,7 @@ public class TransposeAndTimesDiagonal {
 		protected void setup(
 				org.apache.hadoop.mapreduce.Reducer<IntWritable, ElementWritable, IntWritable, VectorWritable>.Context context)
 				throws IOException, InterruptedException {
-			cardinality = context.getConfiguration().getInt("cardinality", 0);
+			cardinality = context.getConfiguration().getInt("colLength", 0);
 		};
 
 		protected void reduce(
@@ -136,7 +136,7 @@ public class TransposeAndTimesDiagonal {
 	}
 
 	public void run(Vector diagonal, String tmpPath, String matrixPath,
-			String resultMatrixPath, int matrixCardinality, int numReducers)
+			int numRows, int numCols, String resultMatrixPath, int numReducers)
 			throws IOException, InterruptedException, ClassNotFoundException {
 
 		// writing the diagonal to HDFS
@@ -144,14 +144,15 @@ public class TransposeAndTimesDiagonal {
 		final FileSystem fs = FileSystem.get(conf);
 		FSDataOutputStream out = fs.create(new Path(tmpPath));
 		Iterator<Vector.Element> itr = diagonal.iterator();
-		while (itr.hasNext())
+		int i = 0;
+		while (i++ < numCols)
 			out.writeDouble(itr.next().get());
 		out.close();
 
-		//launching the job
+		// launching the job
 		Configuration config = new Configuration();
-		config.setInt("cardinality", matrixCardinality);
-		config.setInt("diagonalLength", matrixCardinality);
+		config.setInt("colLength", numRows);
+		config.setInt("diagonalLength", numCols);
 		config.setStrings("diagonalFilePath", tmpPath);
 
 		Job job = new Job(config);
@@ -168,7 +169,6 @@ public class TransposeAndTimesDiagonal {
 		job.setNumReduceTasks(numReducers);
 		job.waitForCompletion(true);
 
-		
 	}
 
 	// test
