@@ -100,7 +100,7 @@ public class TransposeAndTimesDiagonal {
 				Vector.Element element = itr.next();
 				double val = element.get() * diagonal.getQuick(element.index());
 				// sending only the nonzero elements
-				if (val > 1e-10 || val < -1e-10)
+				if (val > 1e-16 || val < -1e-16)
 					context.write(new IntWritable(element.index()),
 							new ElementWritable(val, rowId.get()));
 			}
@@ -150,12 +150,12 @@ public class TransposeAndTimesDiagonal {
 		out.close();
 
 		// launching the job
-		Configuration config = new Configuration();
-		config.setInt("colLength", numRows);
-		config.setInt("diagonalLength", numCols);
-		config.setStrings("diagonalFilePath", tmpPath);
 
-		Job job = new Job(config);
+		conf.setInt("colLength", numRows);
+		conf.setInt("diagonalLength", numCols);
+		conf.setStrings("diagonalFilePath", tmpPath);
+
+		Job job = new Job(conf);
 		job.setJarByClass(TransposeAndTimesDiagonal.class);
 		FileInputFormat.addInputPaths(job, matrixPath);
 		FileOutputFormat.setOutputPath(job, new Path(resultMatrixPath));

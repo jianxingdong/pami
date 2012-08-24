@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.hadoop.DistributedRowMatrix;
 import org.apache.mahout.math.hadoop.stochasticsvd.SSVDSolver;
 
+import ca.uwaterloo.cpami.css.baselines.HadoopUtils;
 import ca.uwaterloo.cpami.css.dataprep.SequenceFileToCSV;
 
 /**
@@ -73,34 +73,24 @@ public class PseudoInverse {
 				JVM_EPS * Math.max(numRows, numCols) * sValues.get(0));
 
 		Path rPath = new Path(TMP_R_PATH);
-		transposeAndTimesDiagonal(getDataFilePath(ssvdSolver.getUPath()),
-				numRows, k, sValuesInverted, TMP_R_PATH);
+		transposeAndTimesDiagonal(
+				HadoopUtils.getDataFilePath(ssvdSolver.getUPath()), numRows, k,
+				sValuesInverted, TMP_R_PATH);
 
 		DistributedRowMatrix V = new DistributedRowMatrix(
-				getDataFilePath(ssvdSolver.getVPath()),
-				new Path(TMP_V_OUT_PATH), numCols, k);
+				HadoopUtils.getDataFilePath(ssvdSolver.getVPath()), new Path(
+						TMP_V_OUT_PATH), numCols, k);
 		V.setConf(conf);
 
 		DistributedRowMatrix R = new DistributedRowMatrix(
-				getDataFilePath(rPath.toString()), new Path(TMP_R_OUT_PATH), k,
-				numRows);
+				HadoopUtils.getDataFilePath(rPath.toString()), new Path(
+						TMP_R_OUT_PATH), k, numRows);
 		R.setConf(conf);
 		// for now V is transposed before the multiplication. TODO try to
 		// omit the extra transpose
 
 		DistributedRowMatrix result = V.transpose().times(R);
 		return result;
-	}
-
-	private Path getDataFilePath(String outputDirectory) throws IOException {
-		FileSystem fs = FileSystem.get(new Configuration());
-		FileStatus[] files = fs.listStatus(new Path(outputDirectory));
-		for (FileStatus status : files) {
-			Path p = status.getPath();
-			if (!p.getName().startsWith("_"))
-				return p;
-		}
-		return null;
 	}
 
 	/**
