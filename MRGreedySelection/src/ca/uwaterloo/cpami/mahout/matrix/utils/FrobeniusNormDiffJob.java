@@ -85,7 +85,9 @@ public class FrobeniusNormDiffJob {
 		job.setNumReduceTasks(1);
 		job.waitForCompletion(false);
 		if (job.isSuccessful())
-			return sumValues(HadoopUtils.getDataFilePath(ROW_SUM_PATH), conf);
+			return Math.sqrt(sumValues(
+					HadoopUtils.getDataFilePath(ROW_SUM_PATH), conf));
 		throw new RuntimeException("Frobenius Norm Job is unsuccessful");
 	}
+
 }

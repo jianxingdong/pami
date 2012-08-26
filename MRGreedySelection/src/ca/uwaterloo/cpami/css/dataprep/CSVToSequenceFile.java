@@ -1,6 +1,5 @@
 package ca.uwaterloo.cpami.css.dataprep;
 
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
@@ -25,7 +24,7 @@ import org.apache.mahout.math.VectorWritable;
 public class CSVToSequenceFile {
 
 	public static void csvToSequenceFile(String csvPath, String separator,
-			int colLength, String outputPath) {
+			int rowLength, String outputPath) {
 
 		try {
 			final Configuration conf = new Configuration();
@@ -63,17 +62,19 @@ public class CSVToSequenceFile {
 					// based to zero
 					// basd
 
+					
 					from = Integer.parseInt(st.nextToken()) - 1; // convert from
-																	// 1 based
-																	// to zero
-																	// based
+					// 1 based
+					// to zero
+					// based
+
 
 					val = Float.parseFloat(st.nextToken());
 					if (max_from < from)
 						max_from = from;
 					if (max_to < to)
 						max_to = to;
-					if (from < 0 || to < 0 || from > colLength || val == 0.0)
+					if (from < 0 || to < 0 || from > rowLength || val == 0.0)
 						throw new NumberFormatException("wrong data" + from
 								+ " to: " + to + " val: " + val);
 				}
@@ -87,7 +88,7 @@ public class CSVToSequenceFile {
 				}
 				// a new column is observed, open a new vector for it
 				if (last_to != to) {
-					vector = new SequentialAccessSparseVector(colLength);
+					vector = new SequentialAccessSparseVector(rowLength);
 					key.set(to); // open a new vector
 					total++;
 				}

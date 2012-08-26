@@ -100,7 +100,7 @@ public class TransposeAndTimesDiagonal {
 				Vector.Element element = itr.next();
 				double val = element.get() * diagonal.getQuick(element.index());
 				// sending only the nonzero elements
-				if (val > 1e-16 || val < -1e-16)
+				if (val > 1.1e-16 || val < -1.1e-16)
 					context.write(new IntWritable(element.index()),
 							new ElementWritable(val, rowId.get()));
 			}
@@ -167,12 +167,15 @@ public class TransposeAndTimesDiagonal {
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 		job.setNumReduceTasks(numReducers);
-		job.waitForCompletion(true);
+		job.waitForCompletion(false);
+		if (!job.isSuccessful())
+			throw new RuntimeException(
+					"TransposeAndTimesDiagonal Job is unsuccessful");
 
 	}
 
 	// test
-	public static void main(String[] args) throws IOException,
+	public static void _main(String[] args) throws IOException,
 			InterruptedException, ClassNotFoundException {
 
 		CSVToSequenceFile.csvToSequenceFile("/inv/inv-test.txt", ",", 99,
@@ -211,5 +214,9 @@ public class TransposeAndTimesDiagonal {
 		System.out.println("DONE--> Converting To CSV");
 		SequenceFileToCSV.sequenceFileToCSV("/inv/R", "/inv/R.csv", ",");
 
+	}
+
+	public static void main(String[] args) {
+		System.out.println(1.1e-16);
 	}
 }

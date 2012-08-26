@@ -6,6 +6,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.math.hadoop.DistributedRowMatrix;
 
+import ca.uwaterloo.cpami.css.dataprep.CSVToSequenceFile;
 import ca.uwaterloo.cpami.mahout.matrix.utils.FrobeniusNormDiffJob;
 import ca.uwaterloo.cpami.mahout.matrix.utils.PseudoInverse;
 
@@ -30,17 +31,19 @@ public class ReconstructionError {
 	 * 
 	 */
 	public double clacReconstructionErr(DistributedRowMatrix A,
-			DistributedRowMatrix C, int numCColumns)
-			throws IllegalArgumentException, IOException, InterruptedException,
-			ClassNotFoundException {
+			DistributedRowMatrix C) throws IllegalArgumentException,
+			IOException, InterruptedException, ClassNotFoundException {
 		PseudoInverse pseudoInverse = new PseudoInverse();
 		// for now 1
 		pseudoInverse.setNumReducers(1);
 		DistributedRowMatrix cT = C.transpose();
-		DistributedRowMatrix B = cT
-				.times(pseudoInverse.invert(new Path[] { C.times(cT)
-						.transpose().getRowPath() }, C.numCols(), C.numCols()))
-				.transpose().times(C.times(A));
+		DistributedRowMatrix cTc = C.times(C);
+		DistributedRowMatrix cTcInv = pseudoInverse.invert(
+				new Path[] { cTc.getRowPath() }, cTc.numRows(), cTc.numCols());
+		DistributedRowMatrix c_ctcInv = cT.times(cTcInv);
+		DistributedRowMatrix c_ctcInv_t = c_ctcInv.transpose();
+		DistributedRowMatrix cT_A = C.times(A);
+		DistributedRowMatrix B = c_ctcInv_t.times(cT_A);
 
 		return new FrobeniusNormDiffJob().calcFrobeniusNorm(A.getRowPath(),
 				B.getRowPath());
@@ -50,15 +53,18 @@ public class ReconstructionError {
 	public static void main(String[] args) throws IOException,
 			IllegalArgumentException, InterruptedException,
 			ClassNotFoundException {
+		// CSVToSequenceFile.csvToSequenceFile("/inv/A.csv", ",", 100,
+		// "/inv/A");
+		CSVToSequenceFile.csvToSequenceFile("/inv/A.csv", ",", 100, "/inv/C");
 		Configuration conf = new Configuration();
-		DistributedRowMatrix A = new DistributedRowMatrix(new Path("/inv/U"),
-				new Path("/tmp1/A"), 99, 99);
+		DistributedRowMatrix A = new DistributedRowMatrix(new Path("/inv/A"),
+				new Path("/tmpA/A"), 99, 100);
 		A.setConf(conf);
-		DistributedRowMatrix C = new DistributedRowMatrix(new Path("/inv/U"),
-				new Path("/tmp1/B"), 99, 99);
+		DistributedRowMatrix C = new DistributedRowMatrix(new Path("/inv/C"),
+				new Path("/tmpC/C"), 99, 100);
 		C.setConf(conf);
-		System.out.println(new ReconstructionError().clacReconstructionErr(A,
-				C, 99));
+		System.out.println(new ReconstructionError()
+				.clacReconstructionErr(A, C));
 
 	}
 }

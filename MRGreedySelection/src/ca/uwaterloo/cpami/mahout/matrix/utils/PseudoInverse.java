@@ -1,7 +1,6 @@
 package ca.uwaterloo.cpami.mahout.matrix.utils;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -11,7 +10,6 @@ import org.apache.mahout.math.hadoop.DistributedRowMatrix;
 import org.apache.mahout.math.hadoop.stochasticsvd.SSVDSolver;
 
 import ca.uwaterloo.cpami.css.baselines.HadoopUtils;
-import ca.uwaterloo.cpami.css.dataprep.SequenceFileToCSV;
 
 /**
  * 
@@ -29,7 +27,7 @@ public class PseudoInverse {
 	private static final String TMP_SSVD_OUTPUT_PATH = "/tmp/inv-ssvd-tmp-path";
 	private static final int SSVD_P = 15;
 
-	private static final double JVM_EPS = 1.1 * 10e-16;
+	private static final double JVM_EPS = 1.1e-16;
 	private static final String TMP_V_OUT_PATH = "/tmp/v-tmp-out-path";
 	private static final String TMP_R_PATH = "/tmp/r-tmp-path";
 	private static final String TMP_R_OUT_PATH = "/tmp/r-tmp-out-path";
@@ -86,8 +84,6 @@ public class PseudoInverse {
 				HadoopUtils.getDataFilePath(rPath.toString()), new Path(
 						TMP_R_OUT_PATH), k, numRows);
 		R.setConf(conf);
-		// for now V is transposed before the multiplication. TODO try to
-		// omit the extra transpose
 
 		DistributedRowMatrix result = V.transpose().times(R);
 		return result;
@@ -131,35 +127,10 @@ public class PseudoInverse {
 			double vi = v.get(i);
 			if (vi > nonZeroThreshold)
 				v.set(i, 1 / vi);
+			else
+				v.set(i, 0);
 		}
 		return v;
-	}
-
-	// test
-	public static void main(String[] args) throws IOException {
-
-		DistributedRowMatrix result = new PseudoInverse().invert(
-				new Path[] { new Path("/inv/U") }, 99, 99);
-		System.out.println(result.getRowPath());
-		System.out.println(result.getOutputTempPath());
-		SequenceFileToCSV.sequenceFileToCSV(result.getRowPath().toString(),
-				"/inv/invmat.csv", ",");
-
-	}
-
-	public static void _main(String[] args) throws IllegalArgumentException,
-			SecurityException, IOException, InterruptedException,
-			ClassNotFoundException, InstantiationException,
-			IllegalAccessException, InvocationTargetException,
-			NoSuchMethodException {
-
-		// DistributedRowMatrix mat = new DistributedRowMatrix(new
-		// Path("/inv/R"),
-		// new Path("/tmp/R"), 99, 99);
-		// mat.transpose();
-		Path p = new Path("/home/ahmed/_log");
-		System.out.println(p.getName().startsWith("_"));
-		System.out.println(p.toString());
 	}
 
 }
