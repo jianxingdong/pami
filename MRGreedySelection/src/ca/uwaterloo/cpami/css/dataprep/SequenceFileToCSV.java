@@ -52,6 +52,7 @@ public class SequenceFileToCSV {
 									+ separator
 									+ vect.getQuick(element.index()) + "\n");
 						}
+
 					}
 
 					reader.close();
@@ -61,5 +62,9 @@ public class SequenceFileToCSV {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	public static void main(String[] args) {
+		SequenceFileToCSV.sequenceFileToCSV(args[0], args[1], ",");
 	}
 }

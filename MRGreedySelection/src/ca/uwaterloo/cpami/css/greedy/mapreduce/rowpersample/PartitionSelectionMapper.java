@@ -2,18 +2,18 @@ package ca.uwaterloo.cpami.css.greedy.mapreduce.rowpersample;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.VectorWritable;
 
 public class PartitionSelectionMapper extends
-		Mapper<LongWritable, Text, IntWritable, SamplePartition> {
+		Mapper<IntWritable, VectorWritable, IntWritable, SamplePartition> {
 
 	private int numPartitions;
 	private int numColsPerPart;
 
 	protected void setup(
-			org.apache.hadoop.mapreduce.Mapper<LongWritable, Text, IntWritable, SamplePartition>.Context context)
+			org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, SamplePartition>.Context context)
 			throws java.io.IOException, InterruptedException {
 		this.numPartitions = context.getConfiguration().getInt("numPartitions",
 				0);
@@ -25,50 +25,51 @@ public class PartitionSelectionMapper extends
 	private boolean isFirstPair = true;
 
 	protected void map(
-			LongWritable key,
-			Text value,
-			org.apache.hadoop.mapreduce.Mapper<LongWritable, Text, IntWritable, SamplePartition>.Context context)
+			IntWritable key,
+			VectorWritable value,
+			org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, SamplePartition>.Context context)
 			throws java.io.IOException, InterruptedException {
 
-		String sampleStr = value.toString();
-		String[] ftrs = sampleStr.split(",");
 		int offset = 0;
 		int lastIndex = numPartitions - 1;
 		boolean isFirstMap = isFirstPair
 				&& context.getTaskAttemptID().getId() == 0;
 		for (int i = 0; i < lastIndex; i++) {
 
-			context.write(new IntWritable(i),
-					getSamplePartition(ftrs, offset, numColsPerPart, false));
+			context.write(
+					new IntWritable(i),
+					getSamplePartition(value.get(), offset, numColsPerPart,
+							false));
 
 			// only the first mapper sends the indices of the columns of each
 			// partition
 			if (isFirstMap) {
 				context.write(
 						new IntWritable(i),
-						getColIndices(offset, numColsPerPart, false,
-								ftrs.length));
+						getColIndices(offset, numColsPerPart, false, value
+								.get().size()));
 			}
 			offset += numColsPerPart;
 		}
 		context.write(new IntWritable(lastIndex),
-				getSamplePartition(ftrs, offset, numColsPerPart, true));
+				getSamplePartition(value.get(), offset, numColsPerPart, true));
 		if (isFirstMap) {
-			context.write(new IntWritable(lastIndex),
-					getColIndices(offset, numColsPerPart, true, ftrs.length));
+			context.write(
+					new IntWritable(lastIndex),
+					getColIndices(offset, numColsPerPart, true, value.get()
+							.size()));
 		}
 		isFirstPair = false;
 	};
 
-	private SamplePartition getSamplePartition(String[] features, int offset,
+	private SamplePartition getSamplePartition(Vector features, int offset,
 			int size, boolean isLastPart) {
 		if (isLastPart) {
-			size = features.length - offset;
+			size = features.size() - offset;
 		}
 		DoubleWritable[] part = new DoubleWritable[size];
 		for (int i = 0; i < size; i++) {
-			part[i] = new DoubleWritable(
-					Double.parseDouble(features[i + offset]));
+			part[i] = new DoubleWritable(features.getQuick(i));
 
 		}
 		SamplePartition sp = new SamplePartition();

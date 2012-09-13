@@ -1,7 +1,10 @@
 package ca.uwaterloo.cpami.css.greedy.mapreduce.rowpersample;
 
+import java.util.Iterator;
+
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.mahout.math.Vector;
 
 public class Utils {
 
@@ -20,5 +23,14 @@ public class Utils {
 		for (int i = 0; i < hdbArray.length; i++)
 			nativeArray[i] = ((DoubleWritable) hdbArray[i]).get();
 		return nativeArray;
+	}
+
+	public static double[] toNativeDoubleArray(Vector c) {
+		double[] arr = new double[c.size()];
+		Iterator<Vector.Element> itr = c.iterator();
+		int i = 0;
+		while (itr.hasNext())
+			arr[i++] = itr.next().get();
+		return arr;
 	}
 }

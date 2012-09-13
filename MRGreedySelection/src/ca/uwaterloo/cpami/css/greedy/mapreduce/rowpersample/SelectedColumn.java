@@ -4,20 +4,20 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.mahout.math.VectorWritable;
 
 public class SelectedColumn implements Writable {
 
 	private IntWritable columnIndex;
-	private DoubleArrayWritable column;
+	private VectorWritable column;
 
 	public SelectedColumn() {
 
 	}
 
-	public SelectedColumn(IntWritable columnIndex, DoubleArrayWritable column) {
+	public SelectedColumn(IntWritable columnIndex, VectorWritable column) {
 		this.columnIndex = columnIndex;
 		this.column = column;
 	}
@@ -26,7 +26,7 @@ public class SelectedColumn implements Writable {
 		return columnIndex;
 	}
 
-	public ArrayWritable getColumn() {
+	public VectorWritable getColumn() {
 		return column;
 	}
 
@@ -34,7 +34,7 @@ public class SelectedColumn implements Writable {
 	public void readFields(DataInput dis) throws IOException {
 		columnIndex = new IntWritable();
 		columnIndex.readFields(dis);
-		column = new DoubleArrayWritable();
+		column = new VectorWritable();
 		column.readFields(dis);
 	}
 

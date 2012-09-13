@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -19,8 +21,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
-
-import ca.uwaterloo.cpami.css.baselines.HadoopUtils;
 
 /**
  * 
@@ -50,22 +50,32 @@ public class FrobeniusNormDiffJob {
 	private double sumValues(Path seqFilePath, Configuration conf)
 			throws IOException {
 		final FileSystem fs = FileSystem.get(conf);
-		final SequenceFile.Reader reader = new SequenceFile.Reader(fs,
-				seqFilePath, conf);
-		NullWritable key = NullWritable.get();
-		DoubleWritable val = new DoubleWritable();
+		FileStatus[] files = fs.listStatus(seqFilePath, new PathFilter() {
+
+			@Override
+			public boolean accept(Path p) {
+				return !p.getName().startsWith("_");
+			}
+		});
 		double sum = 0;
-		while (reader.next(key, val)) {
-			sum += val.get();
+		for (FileStatus f : files) {
+			final SequenceFile.Reader reader = new SequenceFile.Reader(fs,
+					f.getPath(), conf);
+			NullWritable key = NullWritable.get();
+			DoubleWritable val = new DoubleWritable();
+
+			while (reader.next(key, val)) {
+				sum += val.get();
+			}
+			reader.close();
 		}
-		reader.close();
 		return sum;
 	}
 
 	private final static String ROW_SUM_PATH = "/tmp/rowFrobNorm";
 
-	public double calcFrobeniusNorm(Path A, Path B) throws IOException,
-			InterruptedException, ClassNotFoundException {
+	public double calcFrobeniusNorm(Path A, Path B, int numReducers)
+			throws IOException, InterruptedException, ClassNotFoundException {
 
 		final Configuration conf = new Configuration();
 		FileSystem.get(conf).delete(new Path(ROW_SUM_PATH), true);
@@ -82,11 +92,10 @@ public class FrobeniusNormDiffJob {
 		job.setMapOutputValueClass(VectorWritable.class);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-		job.setNumReduceTasks(1);
+		job.setNumReduceTasks(numReducers);
 		job.waitForCompletion(false);
 		if (job.isSuccessful())
-			return Math.sqrt(sumValues(
-					HadoopUtils.getDataFilePath(ROW_SUM_PATH), conf));
+			return Math.sqrt(sumValues(new Path(ROW_SUM_PATH), conf));
 		throw new RuntimeException("Frobenius Norm Job is unsuccessful");
 	}
 

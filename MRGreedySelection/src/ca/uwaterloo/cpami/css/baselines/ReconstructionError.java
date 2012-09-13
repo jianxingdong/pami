@@ -6,9 +6,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.math.hadoop.DistributedRowMatrix;
 
-import ca.uwaterloo.cpami.css.dataprep.CSVToSequenceFile;
 import ca.uwaterloo.cpami.mahout.matrix.utils.FrobeniusNormDiffJob;
-import ca.uwaterloo.cpami.mahout.matrix.utils.PseudoInverse;
+import ca.uwaterloo.cpami.mahout.matrix.utils.Helpers;
 
 /**
  * 
@@ -16,6 +15,7 @@ import ca.uwaterloo.cpami.mahout.matrix.utils.PseudoInverse;
  * span), the reconstruction error defined as ||A-C*(C'*C)^-1*C'*A||_F is
  * computed. The two matrices should be given as DistributedRowMatrix
  * 
+ * TODO for now C must be orthogonal/semi-orthogonal
  */
 public class ReconstructionError {
 
@@ -31,40 +31,44 @@ public class ReconstructionError {
 	 * 
 	 */
 	public double clacReconstructionErr(DistributedRowMatrix A,
-			DistributedRowMatrix C) throws IllegalArgumentException,
-			IOException, InterruptedException, ClassNotFoundException {
-		PseudoInverse pseudoInverse = new PseudoInverse();
-		// for now 1
-		pseudoInverse.setNumReducers(1);
-		DistributedRowMatrix cT = C.transpose();
-		DistributedRowMatrix cTc = C.times(C);
-		DistributedRowMatrix cTcInv = pseudoInverse.invert(
-				new Path[] { cTc.getRowPath() }, cTc.numRows(), cTc.numCols());
-		DistributedRowMatrix c_ctcInv = cT.times(cTcInv);
-		DistributedRowMatrix c_ctcInv_t = c_ctcInv.transpose();
-		DistributedRowMatrix cT_A = C.times(A);
-		DistributedRowMatrix B = c_ctcInv_t.times(cT_A);
+			DistributedRowMatrix C, int numReducers)
+			throws IllegalArgumentException, IOException, InterruptedException,
+			ClassNotFoundException {
+		/*
+		 * PseudoInverse pseudoInverse = new PseudoInverse();
+		 * pseudoInverse.setNumReducers(numReducers); DistributedRowMatrix cT =
+		 * C.transpose(); DistributedRowMatrix cTc = C.times(C);
+		 * DistributedRowMatrix cTcInv = pseudoInverse.invert( new Path[] {
+		 * cTc.getRowPath() }, cTc.numRows(), cTc.numCols());
+		 * DistributedRowMatrix c_ctcInv = cT.times(cTcInv);
+		 * DistributedRowMatrix c_ctcInv_t = c_ctcInv.transpose();
+		 * DistributedRowMatrix cT_A = C.times(A); DistributedRowMatrix B =
+		 * c_ctcInv_t.times(cT_A);
+		 */
 
+		DistributedRowMatrix CTA = multiply(A, C);
+		DistributedRowMatrix CT = C.transpose();
+		DistributedRowMatrix CCTA = multiply(CTA, CT);
 		return new FrobeniusNormDiffJob().calcFrobeniusNorm(A.getRowPath(),
-				B.getRowPath());
+				CCTA.getRowPath(), numReducers);
 	}
 
-	// test
-	public static void main(String[] args) throws IOException,
-			IllegalArgumentException, InterruptedException,
+	private DistributedRowMatrix multiply(DistributedRowMatrix A,
+			DistributedRowMatrix C) throws IOException, InterruptedException,
 			ClassNotFoundException {
-		// CSVToSequenceFile.csvToSequenceFile("/inv/A.csv", ",", 100,
-		// "/inv/A");
-		CSVToSequenceFile.csvToSequenceFile("/inv/A.csv", ",", 100, "/inv/C");
-		Configuration conf = new Configuration();
-		DistributedRowMatrix A = new DistributedRowMatrix(new Path("/inv/A"),
-				new Path("/tmpA/A"), 99, 100);
-		A.setConf(conf);
-		DistributedRowMatrix C = new DistributedRowMatrix(new Path("/inv/C"),
-				new Path("/tmpC/C"), 99, 100);
-		C.setConf(conf);
-		System.out.println(new ReconstructionError()
-				.clacReconstructionErr(A, C));
-
+		int CNumParts = Helpers.getNumPrtitions(C.getRowPath());
+		int ANumParts = Helpers.getNumPrtitions(A.getRowPath());
+		if (CNumParts == ANumParts) {
+			return C.times(A);
+		} else {
+			// C is smaller, repartition it
+			Path newCPath = new Path(C.getRowPath().getParent(), C.getRowPath()
+					.getName() + "-repartition");
+			Helpers.repartitionMatrix(C.getRowPath(), newCPath, ANumParts);
+			DistributedRowMatrix CP = new DistributedRowMatrix(newCPath,
+					C.getOutputTempPath(), C.numRows(), C.numCols());
+			CP.setConf(new Configuration());
+			return CP.times(A);
+		}
 	}
 }

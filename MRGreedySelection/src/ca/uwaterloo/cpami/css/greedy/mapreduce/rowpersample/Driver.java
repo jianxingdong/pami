@@ -4,14 +4,13 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.mahout.math.VectorWritable;
 
 public class Driver {
 
@@ -23,7 +22,7 @@ public class Driver {
 				numPartitions, numColumns, k, l).waitForCompletion(true);
 
 		getFinalSelectionJob(tempSelectionFile, selectedColumnsFile, k)
-				.waitForCompletion(true);
+				.waitForCompletion(false);
 	}
 
 	private Job getPartitionSelectionJob(String originalDataFile,
@@ -42,11 +41,12 @@ public class Driver {
 		job.setMapperClass(PartitionSelectionMapper.class);
 		job.setReducerClass(PartitionSelectionReducer.class);
 		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(DoubleArrayWritable.class);
+		job.setOutputValueClass(VectorWritable.class);
 		job.setMapOutputValueClass(SamplePartition.class);
 		job.setNumReduceTasks(numPartitions);
+		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-		// job.setOutputFormatClass(TextOutputFormat.class);
+
 		return job;
 	}
 
@@ -61,11 +61,10 @@ public class Driver {
 		job.setMapperClass(FinalSelectionMapper.class);
 		job.setReducerClass(FinalSelectionReducer.class);
 		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(ArrayWritable.class);
+		job.setOutputValueClass(VectorWritable.class);
 		job.setMapOutputValueClass(SelectedColumn.class);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
-		// job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 		job.setNumReduceTasks(1);
 		return job;
 	}

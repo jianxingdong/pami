@@ -49,6 +49,7 @@ public class GreedyColSubsetSelection {
 			int l = findMaxRatio(f.getColumn(0), g.getColumn(0), n,
 					selectedIndicesHash);
 			if (l == -1) {
+				System.out.println("l == -1");
 				break;
 			}
 			selectedIndices.add(l);
@@ -80,8 +81,10 @@ public class GreedyColSubsetSelection {
 					.scalarMultiply(1.0 / alphaSqrt);// px1
 			V.setSubMatrix(v.getDataRef(), 0, t);
 
-			if (isExceededRank(delta, alphaSqrt))
+			if (isExceededRank(delta, alphaSqrt)){
+				System.out.println("excceded the rank");
 				break;
+			}
 
 			Array2DRowRealMatrix r1 = (Array2DRowRealMatrix) G.transpose()
 					.multiply(v);// nx1

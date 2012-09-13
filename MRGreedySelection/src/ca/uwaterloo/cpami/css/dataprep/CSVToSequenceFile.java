@@ -52,6 +52,10 @@ public class CSVToSequenceFile {
 			int max_to = 0;
 			int max_from = 0;
 
+			// skip 3 lines
+			for (int i = 0; i < 3; i++)
+				br.readLine();
+
 			while ((thisLine = br.readLine()) != null) { // while loop begins
 															// here
 
@@ -62,12 +66,10 @@ public class CSVToSequenceFile {
 					// based to zero
 					// basd
 
-					
 					from = Integer.parseInt(st.nextToken()) - 1; // convert from
 					// 1 based
 					// to zero
 					// based
-
 
 					val = Float.parseFloat(st.nextToken());
 					if (max_from < from)
@@ -83,7 +85,9 @@ public class CSVToSequenceFile {
 				if (last_to != to && last_to != -1) {
 					value.set(vector);
 
+					System.out.println(key);
 					writer.append(key, value); // write the older vector
+					
 					e += vector.getNumNondefaultElements();
 				}
 				// a new column is observed, open a new vector for it
@@ -119,6 +123,14 @@ public class CSVToSequenceFile {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	public static void main(String[] args) {
+	
+		CSVToSequenceFile.csvToSequenceFile(
+				args[0], " ",
+				141043,
+				args[1]);
 	}
 
 }

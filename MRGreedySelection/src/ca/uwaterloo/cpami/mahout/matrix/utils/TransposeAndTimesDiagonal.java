@@ -1,5 +1,6 @@
 package ca.uwaterloo.cpami.mahout.matrix.utils;
 
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.EOFException;
@@ -24,9 +25,6 @@ import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
-
-import ca.uwaterloo.cpami.css.dataprep.CSVToSequenceFile;
-import ca.uwaterloo.cpami.css.dataprep.SequenceFileToCSV;
 
 /**
  * 
@@ -130,7 +128,6 @@ public class TransposeAndTimesDiagonal {
 				ElementWritable element = itr.next();
 				colVector.set(element.index, element.value);
 			}
-
 			context.write(colIndex, new VectorWritable(colVector));
 		};
 	}
@@ -148,13 +145,10 @@ public class TransposeAndTimesDiagonal {
 		while (i++ < numCols)
 			out.writeDouble(itr.next().get());
 		out.close();
-
 		// launching the job
-
 		conf.setInt("colLength", numRows);
 		conf.setInt("diagonalLength", numCols);
 		conf.setStrings("diagonalFilePath", tmpPath);
-
 		Job job = new Job(conf);
 		job.setJarByClass(TransposeAndTimesDiagonal.class);
 		FileInputFormat.addInputPaths(job, matrixPath);
@@ -171,52 +165,5 @@ public class TransposeAndTimesDiagonal {
 		if (!job.isSuccessful())
 			throw new RuntimeException(
 					"TransposeAndTimesDiagonal Job is unsuccessful");
-
-	}
-
-	// test
-	public static void _main(String[] args) throws IOException,
-			InterruptedException, ClassNotFoundException {
-
-		CSVToSequenceFile.csvToSequenceFile("/inv/inv-test.txt", ",", 99,
-				"/inv/U");
-		Vector diag = new SequentialAccessSparseVector(99);
-		for (int i = 0; i < 99; i += 10)
-			diag.set(i, 1);
-		diag.set(1, 2);
-
-		final Configuration conf = new Configuration();
-		final FileSystem fs = FileSystem.get(conf);
-		FSDataOutputStream out = fs.create(new Path("/inv/D"));
-		Iterator<Vector.Element> itr = diag.iterator();
-		while (itr.hasNext())
-			out.writeDouble(itr.next().get());
-		out.close();
-
-		Configuration config = new Configuration();
-		config.setInt("cardinality", 99);
-		config.setInt("diagonalLength", 99);
-		config.setStrings("diagonalFilePath", "/inv/D");
-
-		Job job = new Job(config);
-		job.setJarByClass(TransposeAndTimesDiagonal.class);
-		FileInputFormat.addInputPaths(job, "/inv/U");
-		FileOutputFormat.setOutputPath(job, new Path("/inv/R"));
-		job.setMapperClass(TTDMapper.class);
-		job.setReducerClass(TTDReducer.class);
-		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(VectorWritable.class);
-		job.setMapOutputValueClass(ElementWritable.class);
-		job.setInputFormatClass(SequenceFileInputFormat.class);
-		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-		job.setNumReduceTasks(2);
-		job.waitForCompletion(true);
-		System.out.println("DONE--> Converting To CSV");
-		SequenceFileToCSV.sequenceFileToCSV("/inv/R", "/inv/R.csv", ",");
-
-	}
-
-	public static void main(String[] args) {
-		System.out.println(1.1e-16);
 	}
 }
