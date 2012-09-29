@@ -19,7 +19,12 @@ public class PartitionSelectionMapper extends
 				0);
 		this.numColsPerPart = context.getConfiguration()
 				.getInt("numColumns", 0) / this.numPartitions;
-
+		System.out.println("Map JVM Heap: " + Runtime.getRuntime().maxMemory());
+		System.out.println("mapred.map.child.java.opts: "
+				+ context.getConfiguration().get("mapred.map.child.java.opts"));
+		System.out.println("mapred.reduce.child.java.opts: "
+				+ context.getConfiguration().get(
+						"mapred.reduce.child.java.opts"));
 	};
 
 	private boolean isFirstPair = true;

@@ -17,9 +17,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.mahout.math.DenseMatrix;
-import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Matrix;
+import org.apache.mahout.math.RandomAccessSparseVector;
+import org.apache.mahout.math.SparseMatrix;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
@@ -27,7 +27,7 @@ public class Helpers {
 
 	public static Matrix loadMatrix(Path fPath, int m, int n)
 			throws IOException {
-		Matrix mat = new DenseMatrix(m, n);
+		Matrix mat = new SparseMatrix(m, n);
 		final Configuration conf = new Configuration();
 		final FileSystem fs = FileSystem.get(conf);
 		FileStatus[] parts = fs.listStatus(fPath);
@@ -50,7 +50,6 @@ public class Helpers {
 				}
 			}
 		}
-
 		return mat;
 	}
 
@@ -63,19 +62,19 @@ public class Helpers {
 				fPath, IntWritable.class, VectorWritable.class,
 				CompressionType.BLOCK);
 
+		double val = 0;
 		for (int i = 0; i < m; i++) {
-			double[] row = new double[n];
+			RandomAccessSparseVector v = new RandomAccessSparseVector(n);
 			for (int j = 0; j < n; j++) {
-				row[j] = mat.get(i, j);
-				// System.out.println(i + "," + j + "," + row[j]);
+				if ((val = mat.get(i, j)) != 0) {
+					v.set(j, val);
+				}
 			}
-			writer.append(new IntWritable(i), new VectorWritable(
-					new DenseVector(row)));
+			writer.append(new IntWritable(i), new VectorWritable(v));
 		}
 		writer.close();
 	}
 
-	
 	public static Path getDataFilePath(String outputDirectory)
 			throws IOException {
 
@@ -88,6 +87,7 @@ public class Helpers {
 		}
 		return null;
 	}
+
 	public static void repartitionMatrix(Path input, Path output,
 			int numPartitions) throws IOException, InterruptedException,
 			ClassNotFoundException {

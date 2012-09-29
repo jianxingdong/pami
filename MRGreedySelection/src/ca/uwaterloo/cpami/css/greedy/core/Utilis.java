@@ -4,10 +4,20 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+
+import org.apache.mahout.math.Matrix;
+import org.apache.mahout.math.SparseMatrix;
+import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.Vector.Element;
+import org.apache.mahout.math.function.Functions;
 
 public class Utilis {
 
-	public static double[][] loadMatrix(String path, String delm) throws IOException {
+	public static double[][] loadMatrix(String path, String delm)
+			throws IOException {
 		BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
 		String line = null;
 		int m = 0;
@@ -33,5 +43,156 @@ public class Utilis {
 			matrix[i++] = row;
 		}
 		return matrix;
+	}
+
+	public static SparseMatrix loadSparseMatrix(String path, String delm,
+			int m, int n) throws IOException {
+		SparseMatrix mat = new SparseMatrix(m, n);
+		BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
+		String line = null;
+		int curRow = 0;
+		while ((line = bufferedReader.readLine()) != null) {
+			String[] parts = line.split(delm);
+			for (int i = 0; i < n; i++) {
+				if (!parts[i].equals("0")) {
+					mat.set(curRow, i, Double.parseDouble(parts[i]));
+				}
+			}
+			curRow++;
+		}
+		System.gc();
+		System.gc();
+		System.out.println(Runtime.getRuntime().totalMemory()
+				- Runtime.getRuntime().freeMemory());
+		return mat;
+	}
+
+	public static Matrix partition(Matrix A, int numPartitions) {
+		int m = A.numRows();
+		int n = A.numCols();
+		Matrix B = A.like(m, numPartitions);
+		List<Integer> partitions = getRandomGroups(n, numPartitions);
+		for (int col = 0; col < n; col++) {
+			int colPart = partitions.get(col);
+			B.assignColumn(
+					colPart,
+					B.viewColumn(colPart).assign(A.viewColumn(col),
+							Functions.PLUS));
+		}
+		return B;
+	}
+
+	private static List<Integer> getRandomGroups(int n, int k) {
+		List<Integer> groups = new ArrayList<Integer>();
+		List<Integer> remaining = new ArrayList<Integer>();
+		for (int i = 0; i < n; i++) {
+			remaining.add(i);
+			groups.add(0);
+		}
+		int g = 0;
+		Random random = new Random();
+		for (int i = n; i > 0; i--) {
+			int index = random.nextInt(i);
+			groups.set(remaining.get(index), g);
+			remaining.remove(index);
+			g = (g + 1) % k;
+		}
+		return groups;
+	}
+
+	/**
+	 * 
+	 * B'A:: B is the partitions matrix, A is much spare than A, Matrix stores the
+	 * rows only in a sparse way, the columns are dense
+	 */
+	public static Matrix transposeTimes(Matrix B, Matrix A) {
+		int m = B.numRows();
+		int c = B.numCols();
+		int n = A.numCols();
+		SparseMatrix G = new SparseMatrix(c, n);
+		double bElement = 0;
+		for (int raInd = 0; raInd < m; raInd++) {
+			Vector ra = A.viewRow(raInd);
+			for (int cbInd = 0; cbInd < c; cbInd++) {
+				if ((bElement = B.get(raInd, cbInd)) != 0) {
+					Iterator<Vector.Element> raNNZItr = ra.iterateNonZero();
+					while (raNNZItr.hasNext()) {
+						Element elm = raNNZItr.next();
+						G.set(cbInd, elm.index(), G.get(cbInd, elm.index())
+								+ elm.get() * bElement);
+					}
+				}
+			}
+		}
+		return G;
+	}
+	
+	public static void main(String[] args) {
+		SparseMatrix a = new SparseMatrix(5, 6);
+		a.set(0, 2, 3);
+		a.set(0, 4, 10);
+		a.set(0, 5, 2);
+		
+		a.set(1, 0, 4);
+		a.set(1, 2, 2);
+		a.set(1, 5, 4);
+		
+		a.set(2, 2, 2);
+		a.set(2, 3, 1);
+		a.set(2, 4, 3);
+		
+		a.set(3, 0, 5);
+		a.set(3, 1, 6);
+		a.set(3, 4, 3);
+		
+		a.set(4, 1, 3);
+		a.set(4, 3, 8);
+		a.set(4, 5, 1);
+		
+		SparseMatrix b = new SparseMatrix(5, 4);
+		b.set(0, 2, 1);
+		b.set(0, 3, 2);
+		
+		b.set(1, 0, 2);
+		b.set(1, 2, 2);
+		
+		b.set(2, 2, 2);
+		b.set(2, 3, 1);
+		
+		b.set(3, 0, 3);
+		b.set(3, 3, 6);
+		
+		b.set(4, 0, 3);
+		b.set(4, 2, 1);
+		
+		
+		Matrix G = transposeTimes(b, a);
+		for(int i=0;i<4;i++)
+			for(int j=0;j<6;j++)
+				System.out.println(G.get(i, j));
+		System.out.println(G.viewRow(1).getNumNondefaultElements());
+	}
+
+	public static Matrix multiply(Matrix A, Matrix B) {
+		int ANumRows = A.numRows();
+		int BNumColumns = B.numCols();
+		Matrix result = A.like(ANumRows, BNumColumns);
+		for (int i = 0; i < ANumRows; i++) {
+
+			for (int j = 0; j < BNumColumns; j++) {
+				Iterator<Vector.Element> rowI = A.viewRow(i).iterateNonZero();
+				double sum = 0;
+
+				while (rowI.hasNext()) {
+					Element e = rowI.next();
+					sum += e.get() * B.get(e.index(), j);
+				}
+
+				if (sum != 0) {
+					result.set(i, j, sum);
+				}
+			}
+		}
+		return result;
 	}
 }

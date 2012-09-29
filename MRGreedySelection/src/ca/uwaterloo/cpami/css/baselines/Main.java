@@ -148,10 +148,11 @@ public class Main {
 
 	public static void main(String[] args) throws IOException,
 			InterruptedException, ClassNotFoundException {
+
 		runRandomSelection();
 		System.out.println(">>>>>>>>>Random Selection-DONE");
-		runGCSS();
-		System.out.println(">>>>>>>>>GCSS-DONE");
+		// runGCSS();
+		// System.out.println(">>>>>>>>>GCSS-DONE");
 		runSSVD();
 		System.out.println(">>>>>>>>>SSVD-DONE");
 	}

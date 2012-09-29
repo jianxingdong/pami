@@ -21,6 +21,15 @@ public class PartitionSelectionReducer extends
 			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, VectorWritable>.Context context)
 			throws java.io.IOException, InterruptedException {
 		this.k = context.getConfiguration().getInt("partitionSubsetSize", 0);
+		
+		System.out.println("Reduce JVM Heap: "
+				+ Runtime.getRuntime().maxMemory());
+		System.out.println("mapred.map.child.java.opts: "
+				+ context.getConfiguration().get(
+						"mapred.map.child.java.opts"));
+		System.out.println("mapred.reduce.child.java.opts: "
+				+ context.getConfiguration().get(
+						"mapred.reduce.child.java.opts"));
 	};
 
 	protected void reduce(
@@ -28,7 +37,7 @@ public class PartitionSelectionReducer extends
 			java.lang.Iterable<SamplePartition> partition,
 			org.apache.hadoop.mapreduce.Reducer<IntWritable, SamplePartition, IntWritable, VectorWritable>.Context context)
 			throws java.io.IOException, InterruptedException {
-
+		
 		// building the matrix
 		ArrayList<double[]> samples = new ArrayList<double[]>();
 		Iterator<SamplePartition> itr = partition.iterator();

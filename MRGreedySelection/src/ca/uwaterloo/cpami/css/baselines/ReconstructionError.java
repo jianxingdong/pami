@@ -46,13 +46,20 @@ public class ReconstructionError {
 		 * c_ctcInv_t.times(cT_A);
 		 */
 
-		DistributedRowMatrix CTA = multiply(A, C);
-		DistributedRowMatrix CT = C.transpose();
-		DistributedRowMatrix CCTA = multiply(CTA, CT);
+		/*
+		 * DistributedRowMatrix CTA = multiply(A, C); DistributedRowMatrix CT =
+		 * C.transpose(); DistributedRowMatrix CCTA = multiply(CTA, CT);
+		 */
+		DistributedRowMatrix CTran = C.transpose();
+		DistributedRowMatrix CCTran = CTran.times(CTran);
+		DistributedRowMatrix ATranCCTran = multiply(A, CCTran);
+		DistributedRowMatrix CCTranA = ATranCCTran.transpose();
+
 		return new FrobeniusNormDiffJob().calcFrobeniusNorm(A.getRowPath(),
-				CCTA.getRowPath(), numReducers);
+				CCTranA.getRowPath(), numReducers);
 	}
 
+	// returns A'*C
 	private DistributedRowMatrix multiply(DistributedRowMatrix A,
 			DistributedRowMatrix C) throws IOException, InterruptedException,
 			ClassNotFoundException {
@@ -68,7 +75,8 @@ public class ReconstructionError {
 			DistributedRowMatrix CP = new DistributedRowMatrix(newCPath,
 					C.getOutputTempPath(), C.numRows(), C.numCols());
 			CP.setConf(new Configuration());
-			return CP.times(A);
+			return A.times(CP);
+			// return CP.times(A);
 		}
 	}
 }

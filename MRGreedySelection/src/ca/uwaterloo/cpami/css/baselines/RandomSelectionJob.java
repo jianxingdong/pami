@@ -32,7 +32,7 @@ public class RandomSelectionJob {
 
 		protected void setup(
 				org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, VectorWritable>.Context context)
-				throws IOException, InterruptedException {
+				throws IOException, InterruptedException {			
 			final Configuration conf = new Configuration();
 			final FileSystem fs = FileSystem.get(conf);
 			FSDataInputStream in = fs.open(new Path(context.getConfiguration()

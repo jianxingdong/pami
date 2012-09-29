@@ -81,7 +81,7 @@ public class GreedyColSubsetSelection {
 					.scalarMultiply(1.0 / alphaSqrt);// px1
 			V.setSubMatrix(v.getDataRef(), 0, t);
 
-			if (isExceededRank(delta, alphaSqrt)){
+			if (isExceededRank(delta, alphaSqrt)) {
 				System.out.println("excceded the rank");
 				break;
 			}
@@ -115,6 +115,8 @@ public class GreedyColSubsetSelection {
 			}
 		}
 
+		System.out.println("total: " + Runtime.getRuntime().totalMemory());
+		System.out.println("free: " + Runtime.getRuntime().freeMemory());
 		return selectedIndices.toArray(new Integer[] {});
 	}
 
@@ -148,7 +150,7 @@ public class GreedyColSubsetSelection {
 		int m = A.getRowDimension();
 		int n = A.getColumnDimension();
 		Array2DRowRealMatrix result = new Array2DRowRealMatrix(m, n);
-			for (int i = 0; i < m; i++) {
+		for (int i = 0; i < m; i++) {
 			for (int j = 0; j < n; j++) {
 				result.setEntry(i, j, A.getEntry(i, j) * B.getEntry(i, j));
 			}
@@ -165,25 +167,20 @@ public class GreedyColSubsetSelection {
 	}
 
 	public static void main(String[] args) throws IOException {
-		double[][] a = Utilis
-				.loadMatrix(
-						"/home/ahmed/Desktop/ICDM13/dataset/kos-full.txt",
-						",");
-		/*for (int i = 0; i < 1000; i++) {
-			int s = 0;
-			for (int j = 0; j < 1500; j++) {
-				s += a[j][i];
-			}
-			System.out.println(s);
-		}
-		System.exit(1);
-		*/
-		Array2DRowRealMatrix x = new Array2DRowRealMatrix(a);
-		System.out.println(x.getColumnDimension());
-		System.out.println(x.getRowDimension());
-		System.exit(0);
+
+		double[][] a = Utilis.loadMatrix(
+				"/home/ahmed/Desktop/Thesis/ICDM13/dataset/kos-full.txt", ",");
+		System.out.println(Runtime.getRuntime().totalMemory());
+		System.out.println(Runtime.getRuntime().freeMemory());
+		System.out.println(a.length);
+		System.out.println(a[0].length);
+		/*
+		 * for (int i = 0; i < 1000; i++) { int s = 0; for (int j = 0; j < 1500;
+		 * j++) { s += a[j][i]; } System.out.println(s); } System.exit(1);
+		 */
+		Array2DRowRealMatrix m = new Array2DRowRealMatrix(a);
 		Integer[] cols = new GreedyColSubsetSelection().selectColumnSubset(
-				new Array2DRowRealMatrix(a), new Array2DRowRealMatrix(a), 100);
+				m, m, 100);
 		for (int i = 0; i < 100; i++)
 			System.out.print(cols[i] + " ");
 	}

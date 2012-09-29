@@ -1,6 +1,8 @@
 package ca.uwaterloo.cpami.mahout.matrix.utils;
 
+
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -12,12 +14,39 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.RandomAccessSparseVector;
+import org.apache.mahout.math.SequentialAccessSparseVector;
+import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
+import org.apache.mahout.math.function.DoubleDoubleFunction;
+import org.apache.mahout.math.function.Functions;
 import org.apache.mahout.math.hadoop.DistributedRowMatrix;
 
 public class TestDRM {
 
-	public static void main(String[] args) throws IOException,
+	public static void main(String[] args) {
+/*
+		Vector v = new DenseVector(8200000);
+		
+		DenseVector v2 = new DenseVector(150000);
+		Iterator<Vector.Element> it = v.iterator();
+		long t = System.currentTimeMillis();
+		int c = 0;
+		while (it.hasNext()){
+			v2.times(it.next().get());			
+		}
+		System.out.println("time: " + (System.currentTimeMillis() - t));
+		System.out.println("C: "+c);
+		// 
+		// v.assign(v2, Functions.PLUS);
+*/
+		SequentialAccessSparseVector v2 = new SequentialAccessSparseVector(8200000);
+		System.out.println(Runtime.getRuntime().freeMemory());
+		System.out.println(Runtime.getRuntime().totalMemory());
+	}
+
+	public static void __main(String[] args) throws IOException,
 			InterruptedException, ClassNotFoundException {
 		final Configuration conf = new Configuration();
 		DistributedRowMatrix a = new DistributedRowMatrix(
