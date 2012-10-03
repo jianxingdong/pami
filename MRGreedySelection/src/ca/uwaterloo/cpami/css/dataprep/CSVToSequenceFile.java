@@ -53,8 +53,8 @@ public class CSVToSequenceFile {
 			int max_from = 0;
 
 			// skip 3 lines
-			for (int i = 0; i < 3; i++)
-				br.readLine();
+			///for (int i = 0; i < 3; i++)
+				//br.readLine();
 
 			while ((thisLine = br.readLine()) != null) { // while loop begins
 															// here
@@ -128,9 +128,9 @@ public class CSVToSequenceFile {
 	public static void main(String[] args) {
 	
 		CSVToSequenceFile.csvToSequenceFile(
-				args[0], " ",
-				141043,
-				args[1]);
+				"/home/ahmed/Desktop/Thesis/ICDM13/dataset/docword.nips.txt", " ",
+				12419 ,
+				"nips.sqns.dat");
 	}
 
 }

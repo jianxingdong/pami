@@ -79,8 +79,10 @@ public class RandomSelectionJob {
 		final Configuration conf = new Configuration();
 		final FileSystem fs = FileSystem.get(conf);
 		FSDataOutputStream out = fs.create(new Path(COLS_PATH));
-		for (int i = 0; i < k; i++)
+		for (int i = 0; i < k; i++){
+			System.out.println("selected: "+l.get(i));
 			out.writeInt(l.get(i));
+		}
 		out.close();
 
 		// launching the job

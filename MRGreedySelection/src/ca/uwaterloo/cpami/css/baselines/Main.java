@@ -17,7 +17,7 @@ public class Main {
 	// cluster size = 20 nodes
 	static String origDataFile = "/common/A";
 
-	static int[] ks = { 100, 500, 1000, 1500, 2000 };
+	static int[] ks = { 100 };// , 500, 1000, 1500, 2000
 
 	static int numCols = 8200000;
 
@@ -89,7 +89,7 @@ public class Main {
 				"/results/Random.txt"), true));
 
 		String tmpMatC = "/tmp/Ctmp/CT";
-
+		String tmpNormDir = "/tmp/tmpNorm";
 		String randomNewMatrix = "random/Rnd/R";
 		String randomNewMatrixOrth = "random/Rnd/ROrth";
 		RandomSelectionJob randomSelectionJob = new RandomSelectionJob();
@@ -97,19 +97,33 @@ public class Main {
 			System.out.println(k);
 			fs.delete(new Path(tmpMatC), true);
 			fs.delete(new Path(randomNewMatrix), true);
+			fs.delete(new Path(tmpNormDir), true);
 			long time = System.currentTimeMillis();
 			randomSelectionJob.runRandomSelection(A.getRowPath().toString(),
 					numCols, k, randomNewMatrix, numReducers);
 			long duration = System.currentTimeMillis() - time;
+			System.out.println("Selection is done");
+			System.out.flush();
 			// Orthogonalization
-			CentralizedOrthogonalization
-					.orthonormalize(new Path(randomNewMatrix), numRows, k,
-							new Path(randomNewMatrixOrth));
-			DistributedRowMatrix C = new DistributedRowMatrix(new Path(
-					randomNewMatrixOrth), new Path(tmpMatC), numRows, k);
-			C.setConf(config);
-			double recErr = new ReconstructionError().clacReconstructionErr(A,
-					C, numReducers);
+			new OrthogonalizationJob().runJob(randomNewMatrix, numRows, k,
+					randomNewMatrixOrth);
+
+			/*
+			 * CentralizedOrthogonalization .orthonormalize(new
+			 * Path(randomNewMatrix), numRows, k, new
+			 * Path(randomNewMatrixOrth));
+			 * 
+			 * 
+			 * DistributedRowMatrix C = new DistributedRowMatrix(new Path(
+			 * randomNewMatrixOrth), new Path(tmpMatC), numRows, k);
+			 * C.setConf(config);
+			 */
+			// double recErr = new
+			// ReconstructionError().clacReconstructionErr(A,
+			// C, numReducers);
+			double recErr = MultiplicationNormJob.calcMultiplicationNorm(A
+					.getRowPath(), new Path(randomNewMatrixOrth), new Path(
+					tmpNormDir), numCols, numReducers);
 			pw.println(k + "\t" + duration + "\t" + recErr);
 			pw.flush();
 		}
@@ -153,7 +167,7 @@ public class Main {
 		System.out.println(">>>>>>>>>Random Selection-DONE");
 		// runGCSS();
 		// System.out.println(">>>>>>>>>GCSS-DONE");
-		runSSVD();
-		System.out.println(">>>>>>>>>SSVD-DONE");
+		// runSSVD();
+		// System.out.println(">>>>>>>>>SSVD-DONE");
 	}
 }

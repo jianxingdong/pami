@@ -16,14 +16,14 @@ public class MainDebug {
 
 	// cluster size = 20 nodes
 	// static String origDataFile = "/common/A";
-	static String origDataFile = "/orth/X";
+	static String origDataFile = "orth/nips/orth";
 
 	// static int[] ks = { 100, 500, 1000, 1500, 2000 };
-	static int[] ks = { 10 };
+	static int[] ks = { 100 };
 	// static int numCols = 8200000;
-	static int numCols = 30;
+	static int numCols = 12419;
 	// static int numRows = 141043;
-	static int numRows = 100;
+	static int numRows = 1500;
 	static FileSystem fs;
 	static String tmpMatA = "/tmp/Atmp/tA";
 
@@ -94,7 +94,7 @@ public class MainDebug {
 				"/results/Random.txt"), true));
 
 		String tmpMatC = "/tmp/Ctmp/CT";
-
+		String tmpNormDir = "/tmp/tmpNorm";
 		String randomNewMatrix = "random/Rnd/R";
 		String randomNewMatrixOrth = "random/Rnd/ROrth";
 		RandomSelectionJob randomSelectionJob = new RandomSelectionJob();
@@ -102,20 +102,20 @@ public class MainDebug {
 			System.out.println(k);
 			fs.delete(new Path(tmpMatC), true);
 			fs.delete(new Path(randomNewMatrix), true);
+			fs.delete(new Path(tmpNormDir), true);
+			fs.delete(new Path(randomNewMatrixOrth),true);
 			long time = System.currentTimeMillis();
 			randomSelectionJob.runRandomSelection(A.getRowPath().toString(),
 					numCols, k, randomNewMatrix, numReducers);
 			long duration = System.currentTimeMillis() - time;
-			// Orthogonalization
-			CentralizedOrthogonalization
-					.orthonormalize(new Path(randomNewMatrix), numRows, k,
-							new Path(randomNewMatrixOrth));
-
-			DistributedRowMatrix C = new DistributedRowMatrix(new Path(
-					randomNewMatrixOrth), new Path(tmpMatC), numRows, k);
-			C.setConf(config);
-			double recErr = new ReconstructionError().clacReconstructionErr(A,
-					C, numReducers);
+			System.out.println("start done");
+			new OrthogonalizationJob().runJob(randomNewMatrix, numRows, k,
+					randomNewMatrixOrth);
+			System.out.println("orth done");
+			double recErr = MultiplicationNormJob.calcMultiplicationNorm(A
+					.getRowPath(), new Path(randomNewMatrixOrth), new Path(
+					tmpNormDir), numCols, numReducers);
+			System.out.println("all done");
 			pw.println(k + "\t" + duration + "\t" + recErr);
 			pw.flush();
 		}
@@ -156,14 +156,16 @@ public class MainDebug {
 
 		pw.close();
 	}
+	
 
 	public static void main(String[] args) throws IOException,
 			InterruptedException, ClassNotFoundException {
+		
 		// CSVToSequenceFile.csvToSequenceFile("/inv1/A.csv", ",", 100,
 		// "/inv1/A");
-		// runRandomSelection();
+		runRandomSelection();
 		// System.out.println(">>>>>>>>>Random Selection-DONE");
-		runGCSS();
+		// runGCSS();
 		// System.out.println(">>>>>>>>>GCSS-DONE");
 		// runSSVD();
 		// System.out.println(">>>>>>>>>SSVD-DONE");
