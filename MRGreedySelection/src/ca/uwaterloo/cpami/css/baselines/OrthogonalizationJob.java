@@ -14,6 +14,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.mahout.math.Matrix;
+import org.apache.mahout.math.NamedVector;
 import org.apache.mahout.math.SparseMatrix;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
@@ -27,13 +28,15 @@ public class OrthogonalizationJob {
 			Mapper<IntWritable, VectorWritable, IntWritable, VectorWritable> {
 
 		final IntWritable zero = new IntWritable(0);
+		final VectorWritable outVect = new VectorWritable();
 
 		protected void map(
 				IntWritable key,
 				VectorWritable value,
 				org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, VectorWritable>.Context context)
 				throws IOException, InterruptedException {
-			context.write(zero, value);
+			outVect.set(new NamedVector(value.get(), key.get() + ""));
+			context.write(zero, outVect);
 		};
 	}
 
@@ -41,7 +44,7 @@ public class OrthogonalizationJob {
 			Reducer<IntWritable, VectorWritable, IntWritable, VectorWritable> {
 
 		protected void reduce(
-				IntWritable rowIndex,
+				IntWritable dummy,
 				java.lang.Iterable<VectorWritable> rows,
 				org.apache.hadoop.mapreduce.Reducer<IntWritable, VectorWritable, IntWritable, VectorWritable>.Context context)
 				throws IOException, InterruptedException {
@@ -50,8 +53,10 @@ public class OrthogonalizationJob {
 					"numRows", -1), context.getConfiguration().getInt(
 					"numCols", -1));
 			Iterator<VectorWritable> rowsItr = rows.iterator();
+
 			while (rowsItr.hasNext()) {
-				mat.assignRow(rowIndex.get(), rowsItr.next().get());
+				NamedVector nv = (NamedVector) rowsItr.next().get();
+				mat.assignRow(Integer.parseInt(nv.getName()), nv.getDelegate());
 			}
 
 			// apply gram-schmidt

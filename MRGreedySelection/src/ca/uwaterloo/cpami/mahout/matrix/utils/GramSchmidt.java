@@ -16,7 +16,9 @@
  */
 package ca.uwaterloo.cpami.mahout.matrix.utils;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Iterator;
@@ -61,6 +63,9 @@ public class GramSchmidt {
 
 			}
 			final double norm2 = col.norm(2);
+			if(norm2==0){
+				System.out.println("zero");
+			}
 			col.assign(new DoubleFunction() {
 				@Override
 				public double apply(double x) {
@@ -70,23 +75,25 @@ public class GramSchmidt {
 		}
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {		
+	
 		RandomAccessSparseVector v = new RandomAccessSparseVector(3);
-		
-		double x = 0/v.norm(2);
-		System.out.println(x);
+		v.set(0, 1); 		v.set(1, 2);  		v.set(2, 3);
+		System.out.println(v.norm(2)*v.norm(2));
 		System.exit(1);
-		final Configuration conf = new Configuration();
-		final FileSystem fs = FileSystem.get(conf);
-		final SequenceFile.Reader reader = new SequenceFile.Reader(fs,
-				new Path("R1.dat"), conf);
-		IntWritable key = new IntWritable();
-		VectorWritable vec = new VectorWritable();
+		//final Configuration conf = new Configuration();
+		//final FileSystem fs = FileSystem.get(conf);
+		//final SequenceFile.Reader reader = new SequenceFile.Reader(fs,
+			//	new Path("R1.dat"), conf);
+		//IntWritable key = new IntWritable();
+		//VectorWritable vec = new VectorWritable();
 		Matrix mat = new SparseMatrix(1500, 100);
 		//SparseRealMatrix mat2 = new OpenMapRealMatrix(12419,1500 );
-		while (reader.next(key, vec)) {
-		
-		mat.assignRow(key.get(), vec.get());
+		BufferedReader reader = new BufferedReader(new FileReader("R.csv"));
+		String line = null;
+		while ((line=reader.readLine())!=null) {		
+		String[] parts = line.split(",");
+		mat.set(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Double.parseDouble(parts[2]));
 			/*
 			Vector v = vec.get();
 			int i=0;
@@ -99,9 +106,11 @@ public class GramSchmidt {
 			}
 			*/						
 		}
-		mat = mat.transpose();
+		
+		//mat = mat.transpose();
 		System.out.println(mat.viewColumn(0).isDense());
 		System.out.println(mat.viewRow(0).isDense());
+		GramSchmidt.orthonormalizeColumns(mat);
 		/*
 		System.out.println("started QR");
 		System.out.println(Runtime.getRuntime().maxMemory());
@@ -116,7 +125,7 @@ public class GramSchmidt {
 		//	System.out.println(mat.viewRow(i).getNumNondefaultElements());
 		//}
 		
-		//GramSchmidt.orthonormalizeColumns(mat);
+		
 	}
 
 	public static void storeSparseColumns(Matrix mat) {

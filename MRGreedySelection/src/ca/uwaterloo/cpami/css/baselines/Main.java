@@ -102,28 +102,15 @@ public class Main {
 			randomSelectionJob.runRandomSelection(A.getRowPath().toString(),
 					numCols, k, randomNewMatrix, numReducers);
 			long duration = System.currentTimeMillis() - time;
-			System.out.println("Selection is done");
-			System.out.flush();
-			// Orthogonalization
+			System.out.println("start done");
+			time = System.currentTimeMillis();
 			new OrthogonalizationJob().runJob(randomNewMatrix, numRows, k,
 					randomNewMatrixOrth);
-
-			/*
-			 * CentralizedOrthogonalization .orthonormalize(new
-			 * Path(randomNewMatrix), numRows, k, new
-			 * Path(randomNewMatrixOrth));
-			 * 
-			 * 
-			 * DistributedRowMatrix C = new DistributedRowMatrix(new Path(
-			 * randomNewMatrixOrth), new Path(tmpMatC), numRows, k);
-			 * C.setConf(config);
-			 */
-			// double recErr = new
-			// ReconstructionError().clacReconstructionErr(A,
-			// C, numReducers);
+			System.out.println("orth done");
 			double recErr = MultiplicationNormJob.calcMultiplicationNorm(A
 					.getRowPath(), new Path(randomNewMatrixOrth), new Path(
 					tmpNormDir), numCols, numReducers);
+			System.out.println("all done, err duration: "+(System.currentTimeMillis() - time));
 			pw.println(k + "\t" + duration + "\t" + recErr);
 			pw.flush();
 		}
