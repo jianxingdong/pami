@@ -52,13 +52,14 @@ public class GramSchmidt {
 
 	public static void orthonormalizeColumns(Matrix mx) {
 
-		int n = mx.numCols();
+		//int n = mx.numCols();
+		int n = mx.numRows();
 
 		for (int c = 0; c < n; c++) {
 			System.out.println("col: " + c);
-			Vector col = mx.viewColumn(c);
+			Vector col = mx.viewRow(c);
 			for (int c1 = 0; c1 < c; c1++) {
-				Vector viewC1 = mx.viewColumn(c1);
+				Vector viewC1 = mx.viewRow(c1);
 				col.assign(col.minus(viewC1.times(viewC1.dot(col))));
 
 			}
@@ -77,10 +78,6 @@ public class GramSchmidt {
 
 	public static void main(String[] args) throws IOException {		
 	
-		RandomAccessSparseVector v = new RandomAccessSparseVector(3);
-		v.set(0, 1); 		v.set(1, 2);  		v.set(2, 3);
-		System.out.println(v.norm(2)*v.norm(2));
-		System.exit(1);
 		//final Configuration conf = new Configuration();
 		//final FileSystem fs = FileSystem.get(conf);
 		//final SequenceFile.Reader reader = new SequenceFile.Reader(fs,
@@ -89,10 +86,11 @@ public class GramSchmidt {
 		//VectorWritable vec = new VectorWritable();
 		Matrix mat = new SparseMatrix(1500, 100);
 		//SparseRealMatrix mat2 = new OpenMapRealMatrix(12419,1500 );
-		BufferedReader reader = new BufferedReader(new FileReader("R.csv"));
+		BufferedReader reader = new BufferedReader(new FileReader("R.3.csv"));
 		String line = null;
 		while ((line=reader.readLine())!=null) {		
 		String[] parts = line.split(",");
+		
 		mat.set(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Double.parseDouble(parts[2]));
 			/*
 			Vector v = vec.get();
@@ -110,6 +108,7 @@ public class GramSchmidt {
 		//mat = mat.transpose();
 		System.out.println(mat.viewColumn(0).isDense());
 		System.out.println(mat.viewRow(0).isDense());
+		mat = mat.transpose();
 		GramSchmidt.orthonormalizeColumns(mat);
 		/*
 		System.out.println("started QR");

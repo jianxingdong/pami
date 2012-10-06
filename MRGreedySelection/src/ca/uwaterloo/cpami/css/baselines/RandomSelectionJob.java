@@ -14,12 +14,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.RandomAccessSparseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
@@ -33,8 +32,7 @@ public class RandomSelectionJob {
 		protected void setup(
 				org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, VectorWritable>.Context context)
 				throws IOException, InterruptedException {			
-			final Configuration conf = new Configuration();
-			final FileSystem fs = FileSystem.get(conf);
+			final FileSystem fs = FileSystem.get(context.getConfiguration());
 			FSDataInputStream in = fs.open(new Path(context.getConfiguration()
 					.get("selectedIndicesFile")));
 			try {
@@ -47,6 +45,9 @@ public class RandomSelectionJob {
 
 		};
 
+		private double vctVal;
+		private final VectorWritable rowWritable = new VectorWritable();
+
 		protected void map(
 				IntWritable key,
 				VectorWritable value,
@@ -54,12 +55,16 @@ public class RandomSelectionJob {
 				throws IOException, InterruptedException {
 
 			Vector original = value.get();
-			Vector selected = new DenseVector(selectedIndices.size());
+			Vector selected = new RandomAccessSparseVector(
+					selectedIndices.size());			
 			int i = 0;
 			for (int c : selectedIndices) {
-				selected.set(i++, original.getQuick(c));
+				if ((vctVal = original.getQuick(c)) != 0)
+					selected.set(i, vctVal);
+				i++;
 			}
-			context.write(key, new VectorWritable(selected));
+			rowWritable.set(selected);
+			context.write(key, rowWritable);
 		};
 
 	}
@@ -67,8 +72,8 @@ public class RandomSelectionJob {
 	private final static String COLS_PATH = "/tmp/rndcols";
 
 	public void runRandomSelection(String originalMatrixPath, int numCols,
-			int k, String outputMatrixPath, int numReducers)
-			throws IOException, InterruptedException, ClassNotFoundException {
+			int k, String outputMatrixPath) throws IOException,
+			InterruptedException, ClassNotFoundException {
 
 		List<Integer> l = new ArrayList<Integer>();
 		for (int i = 0; i < numCols; i++)
@@ -79,8 +84,8 @@ public class RandomSelectionJob {
 		final Configuration conf = new Configuration();
 		final FileSystem fs = FileSystem.get(conf);
 		FSDataOutputStream out = fs.create(new Path(COLS_PATH));
-		for (int i = 0; i < k; i++){
-			System.out.println("selected: "+l.get(i));
+		for (int i = 0; i < k; i++) {
+			System.out.println("selected: " + l.get(i));
 			out.writeInt(l.get(i));
 		}
 		out.close();
@@ -93,12 +98,11 @@ public class RandomSelectionJob {
 		FileInputFormat.addInputPaths(job, originalMatrixPath);
 		FileOutputFormat.setOutputPath(job, new Path(outputMatrixPath));
 		job.setMapperClass(RandomSelectionMapper.class);
-		job.setReducerClass(Reducer.class);
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(VectorWritable.class);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-		job.setNumReduceTasks(numReducers);
+		job.setNumReduceTasks(0);
 		job.waitForCompletion(false);
 		if (!job.isSuccessful())
 			throw new RuntimeException("RandomSelection Job is unsuccessful");

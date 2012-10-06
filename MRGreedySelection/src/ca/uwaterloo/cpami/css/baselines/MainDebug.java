@@ -105,8 +105,8 @@ public class MainDebug {
 			fs.delete(new Path(tmpNormDir), true);
 			fs.delete(new Path(randomNewMatrixOrth),true);
 			long time = System.currentTimeMillis();
-			randomSelectionJob.runRandomSelection(A.getRowPath().toString(),
-					numCols, k, randomNewMatrix, numReducers);
+			//randomSelectionJob.runRandomSelection(A.getRowPath().toString(),
+				//	numCols, k, randomNewMatrix, numReducers);
 			long duration = System.currentTimeMillis() - time;
 			System.out.println("start done");
 			new OrthogonalizationJob().runJob(randomNewMatrix, numRows, k,
