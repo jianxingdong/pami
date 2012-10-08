@@ -16,6 +16,8 @@ import org.apache.mahout.math.Vector;
 public class LocalGreedyCSS {
 
 	// to do random partitioning, take another matrix target
+	// the algorithm takes the Transpose of the original matrix to tighten the
+	// memory requirements
 	public Integer[] selectColumnSubset(Matrix sourceMatTranspose, int k) {
 
 		Matrix GTranspose = Utilis.calcATimeATranspose(sourceMatTranspose); // nxp
@@ -145,13 +147,17 @@ public class LocalGreedyCSS {
 	}
 
 	public static void main(String[] args) throws IOException {
-		SparseMatrix mat = Utilis.loadSparseMatrix(
+		SparseMatrix mx = Utilis.loadSparseMatrix(
 				"/home/ahmed/Desktop/Thesis/ICDM13/dataset/kos-full.txt", ",",
 				6906, 3430);
-		Matrix mx = mat.viewPart(0, 100, 0, 3430);
-		mx = mx.transpose();
-		Integer[] cols = new LocalGreedyCSS().selectColumnSubset(mx, 10);
-		for (int i = 0; i < 10; i++)
-			System.out.print(cols[i] + " ");
+		System.gc();
+		System.gc();
+		System.out.println(mx.viewRow(0).getNumNondefaultElements());
+		System.out.println(Runtime.getRuntime().freeMemory());
+		// Matrix mx = mat.viewPart(0, 100, 0, 3430);
+		// mx = mx.transpose();
+		//Integer[] cols = new LocalGreedyCSS().selectColumnSubset(mx, 10);
+		//for (int i = 0; i < 10; i++)
+			//System.out.print(cols[i] + " ");
 	}
 }

@@ -38,17 +38,19 @@ public class PartitionSelectionReducer extends
 		if (!itr.hasNext())
 			return;
 		Vector firstRow = itr.next().get();
-		SparseMatrix mx = new SparseMatrix(numRows, firstRow.size());
-		mx.assignRow(0, firstRow);
+		// transpose of the original matrix partition
+		SparseMatrix mx = new SparseMatrix(firstRow.size(), numRows);
+		mx.assignColumn(0, firstRow);
 		int rowIndx = 1;
 		while (itr.hasNext()) {
-			mx.assignRow(rowIndx++, itr.next().get());
+			mx.assignColumn(rowIndx++, itr.next().get());
 		}
 		// apply local Greedy subset selection
 		// the partition-based approach is not used for now
 
 		// no random partitioning here
-		Integer[] selectedColumns = new LocalGreedyCSS().selectColumnSubset(mx, mx, k);
+		Integer[] selectedColumns = new LocalGreedyCSS().selectColumnSubset(mx,
+				k);
 		// selectedcols.length might be < k
 		k = selectedColumns.length;
 		for (rowIndx = 0; rowIndx < numRows; rowIndx++) {

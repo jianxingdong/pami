@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.mahout.math.Matrix;
+import org.apache.mahout.math.RandomAccessSparseVector;
 import org.apache.mahout.math.SparseMatrix;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.Vector.Element;
@@ -47,20 +48,24 @@ public class Utilis {
 
 	public static SparseMatrix loadSparseMatrix(String path, String delm,
 			int m, int n) throws IOException {
-		SparseMatrix mat = new SparseMatrix(m, n);
+		SparseMatrix mat = new SparseMatrix(n,m);
 		BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
 		String line = null;
 		int curRow = 0;
 		int nnz = 0;
 		while ((line = bufferedReader.readLine()) != null) {
 			String[] parts = line.split(delm);
+			RandomAccessSparseVector vv = new RandomAccessSparseVector(n);
 			for (int i = 0; i < n; i++) {
 				if (!parts[i].equals("0")) {
-					mat.set(curRow, i, Double.parseDouble(parts[i]));
+					vv.set(i, Double.parseDouble(parts[i]));
 					nnz++;
 				}
 			}
-			curRow++;
+			
+			//mat.set(curRow, i, Double.parseDouble(parts[i]));
+			mat.assignColumn(curRow++, vv);
+			
 		}
 		System.out.println("nnz: " + nnz);
 		return mat;
