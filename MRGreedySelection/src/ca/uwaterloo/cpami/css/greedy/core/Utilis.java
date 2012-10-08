@@ -51,19 +51,18 @@ public class Utilis {
 		BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
 		String line = null;
 		int curRow = 0;
+		int nnz = 0;
 		while ((line = bufferedReader.readLine()) != null) {
 			String[] parts = line.split(delm);
 			for (int i = 0; i < n; i++) {
 				if (!parts[i].equals("0")) {
 					mat.set(curRow, i, Double.parseDouble(parts[i]));
+					nnz++;
 				}
 			}
 			curRow++;
 		}
-		System.gc();
-		System.gc();
-		System.out.println(Runtime.getRuntime().totalMemory()
-				- Runtime.getRuntime().freeMemory());
+		System.out.println("nnz: " + nnz);
 		return mat;
 	}
 
@@ -102,8 +101,8 @@ public class Utilis {
 
 	/**
 	 * 
-	 * B'A:: B is the partitions matrix, A is much spare than A, Matrix stores the
-	 * rows only in a sparse way, the columns are dense
+	 * B'A:: B is the partitions matrix, A is much spare than A, Matrix stores
+	 * the rows only in a sparse way, the columns are dense
 	 */
 	public static Matrix transposeTimes(Matrix B, Matrix A) {
 		int m = B.numRows();
@@ -126,51 +125,42 @@ public class Utilis {
 		}
 		return G;
 	}
-	
+
 	public static void main(String[] args) {
-		SparseMatrix a = new SparseMatrix(5, 6);
-		a.set(0, 2, 3);
-		a.set(0, 4, 10);
-		a.set(0, 5, 2);
-		
+		SparseMatrix a = new SparseMatrix(3, 3);
+		a.set(0, 0, 3);
+		a.set(0, 1, 10);
+		a.set(0, 2, 2);
+
 		a.set(1, 0, 4);
-		a.set(1, 2, 2);
-		a.set(1, 5, 4);
-		
-		a.set(2, 2, 2);
-		a.set(2, 3, 1);
-		a.set(2, 4, 3);
-		
-		a.set(3, 0, 5);
-		a.set(3, 1, 6);
-		a.set(3, 4, 3);
-		
-		a.set(4, 1, 3);
-		a.set(4, 3, 8);
-		a.set(4, 5, 1);
-		
-		SparseMatrix b = new SparseMatrix(5, 4);
-		b.set(0, 2, 1);
-		b.set(0, 3, 2);
-		
+		a.set(1, 1, 2);
+		a.set(1, 2, 4);
+
+		a.set(2, 0, 2);
+		a.set(2, 1, 1);
+		a.set(2, 2, 3);
+
+		SparseMatrix b = new SparseMatrix(3, 2);
+		b.set(0, 0, 1);
+		b.set(0, 1, 2);
+
 		b.set(1, 0, 2);
-		b.set(1, 2, 2);
-		
-		b.set(2, 2, 2);
-		b.set(2, 3, 1);
-		
-		b.set(3, 0, 3);
-		b.set(3, 3, 6);
-		
-		b.set(4, 0, 3);
-		b.set(4, 2, 1);
-		
-		
-		Matrix G = transposeTimes(b, a);
-		for(int i=0;i<4;i++)
-			for(int j=0;j<6;j++)
-				System.out.println(G.get(i, j));
-		System.out.println(G.viewRow(1).getNumNondefaultElements());
+		b.set(1, 1, 2);
+
+		b.set(2, 0, 2);
+		b.set(2, 1, 1);
+
+		Matrix g = calcATimeATranspose(a);
+		for (int i = 0; i < g.numRows(); i++) {
+			for (int j = 0; j < g.numCols(); j++) {
+				System.out.println(g.get(i, j));
+			}
+		}
+		/*
+		 * Matrix G = transposeTimes(b, a); for(int i=0;i<4;i++) for(int
+		 * j=0;j<6;j++) System.out.println(G.get(i, j));
+		 * System.out.println(G.viewRow(1).getNumNondefaultElements());
+		 */
 	}
 
 	public static Matrix multiply(Matrix A, Matrix B) {
@@ -178,11 +168,9 @@ public class Utilis {
 		int BNumColumns = B.numCols();
 		Matrix result = A.like(ANumRows, BNumColumns);
 		for (int i = 0; i < ANumRows; i++) {
-
 			for (int j = 0; j < BNumColumns; j++) {
 				Iterator<Vector.Element> rowI = A.viewRow(i).iterateNonZero();
 				double sum = 0;
-
 				while (rowI.hasNext()) {
 					Element e = rowI.next();
 					sum += e.get() * B.get(e.index(), j);
@@ -195,4 +183,26 @@ public class Utilis {
 		}
 		return result;
 	}
+
+	public static Matrix calcATimeATranspose(Matrix A) {
+		int ANumRows = A.numRows();
+
+		Matrix result = A.like(ANumRows, ANumRows);
+		for (int i = 0; i < ANumRows; i++) {
+			for (int j = 0; j < ANumRows; j++) {
+				Iterator<Vector.Element> rowI = A.viewRow(i).iterateNonZero();
+				double sum = 0;
+				while (rowI.hasNext()) {
+					Element e = rowI.next();
+					sum += e.get() * A.get(j, e.index());
+				}
+
+				if (sum != 0) {
+					result.set(i, j, sum);
+				}
+			}
+		}
+		return result;
+	}
+
 }

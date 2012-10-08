@@ -12,38 +12,39 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.mahout.math.VectorWritable;
 
-public class Driver {
+public class GCSSDriver {
 
 	public void run(String originalDataFile, String tempSelectionFile,
-			int numPartitions, String selectedColumnsFile, int numColumns,
-			int k, float l) throws IOException, InterruptedException,
-			ClassNotFoundException {
+			int numPartitions, String selectedColumnsFile, int numRows,
+			int numColumns, int k, float l, int numReducers)
+			throws IOException, InterruptedException, ClassNotFoundException {
 		getPartitionSelectionJob(originalDataFile, tempSelectionFile,
-				numPartitions, numColumns, k, l).waitForCompletion(true);
+				numPartitions, numRows, numColumns, k, l, numReducers)
+				.waitForCompletion(false);
 
-		getFinalSelectionJob(tempSelectionFile, selectedColumnsFile, k)
+		getFinalSelectionJob(tempSelectionFile, selectedColumnsFile, numRows, k)
 				.waitForCompletion(false);
 	}
 
 	private Job getPartitionSelectionJob(String originalDataFile,
-			String tempSelectionFile, int numPartitions, int numColumns, int k,
-			float l) throws IOException {
+			String tempSelectionFile, int numPartitions, int numRows,
+			int numColumns, int k, float l, int numReducers) throws IOException {
 		Configuration config = new Configuration();
-		config.setInt("partitionSubsetSize",
-				(int) ((1 + l) * k / numPartitions));
+		config.setInt("subsetSize",
+				(int) Math.ceil(((1 + l) * k / numPartitions)));
 		config.setInt("numPartitions", numPartitions);
 		config.setInt("numColumns", numColumns);
+		config.setInt("numRows", numRows);
 
 		Job job = new Job(config);
-		job.setJarByClass(Driver.class);
+		job.setJarByClass(GCSSDriver.class);
 		FileInputFormat.addInputPaths(job, originalDataFile);
 		FileOutputFormat.setOutputPath(job, new Path(tempSelectionFile));
 		job.setMapperClass(PartitionSelectionMapper.class);
 		job.setReducerClass(PartitionSelectionReducer.class);
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(VectorWritable.class);
-		job.setMapOutputValueClass(SamplePartition.class);
-		job.setNumReduceTasks(numPartitions);
+		job.setNumReduceTasks(numReducers);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
@@ -51,40 +52,21 @@ public class Driver {
 	}
 
 	private Job getFinalSelectionJob(String tempSelectionFile,
-			String selectedColumnsFile, int k) throws IOException {
+			String selectedColumnsFile, int numRows, int k) throws IOException {
 		Configuration config = new Configuration();
 		config.setInt("subsetSize", k);
+		config.setInt("numRows", numRows);
 		Job job = new Job(config);
-		job.setJarByClass(Driver.class);
+		job.setJarByClass(GCSSDriver.class);
 		FileInputFormat.addInputPaths(job, tempSelectionFile);
 		FileOutputFormat.setOutputPath(job, new Path(selectedColumnsFile));
 		job.setMapperClass(FinalSelectionMapper.class);
-		job.setReducerClass(FinalSelectionReducer.class);
+		job.setReducerClass(PartitionSelectionReducer.class);
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(VectorWritable.class);
-		job.setMapOutputValueClass(SelectedColumn.class);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 		job.setNumReduceTasks(1);
 		return job;
 	}
-
-	/**
-	 * 
-	 * @param args
-	 *            : args[0]: original Data File, args[1]: temp Selection File,
-	 *            args[2]: numPartitions, args[3]: selected Columns File,
-	 *            args[4]: total number of columns, args[5]: k, args[6]: l
-	 *            (ratio 0 <= l <= 1)
-	 * @throws IOException
-	 * @throws InterruptedException
-	 * @throws ClassNotFoundException
-	 */
-	public static void main(String[] args) throws IOException,
-			InterruptedException, ClassNotFoundException {
-		new Driver().run(args[0], args[1], Integer.parseInt(args[2]), args[3],
-				Integer.parseInt(args[4]), Integer.parseInt(args[5]),
-				Float.parseFloat(args[6]));
-	}
-
 }

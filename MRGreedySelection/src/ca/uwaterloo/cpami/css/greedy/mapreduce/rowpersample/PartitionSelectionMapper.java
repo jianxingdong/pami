@@ -1,100 +1,60 @@
 package ca.uwaterloo.cpami.css.greedy.mapreduce.rowpersample;
 
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.mahout.math.RandomAccessSparseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 public class PartitionSelectionMapper extends
-		Mapper<IntWritable, VectorWritable, IntWritable, SamplePartition> {
+		Mapper<IntWritable, VectorWritable, IntWritable, VectorWritable> {
 
 	private int numPartitions;
 	private int numColsPerPart;
+	private int pMinusOne;
 
 	protected void setup(
-			org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, SamplePartition>.Context context)
+			org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, VectorWritable>.Context context)
 			throws java.io.IOException, InterruptedException {
 		this.numPartitions = context.getConfiguration().getInt("numPartitions",
 				0);
 		this.numColsPerPart = context.getConfiguration()
 				.getInt("numColumns", 0) / this.numPartitions;
-		System.out.println("Map JVM Heap: " + Runtime.getRuntime().maxMemory());
-		System.out.println("mapred.map.child.java.opts: "
-				+ context.getConfiguration().get("mapred.map.child.java.opts"));
-		System.out.println("mapred.reduce.child.java.opts: "
-				+ context.getConfiguration().get(
-						"mapred.reduce.child.java.opts"));
+		pMinusOne = numPartitions - 1;
 	};
 
-	private boolean isFirstPair = true;
+	private VectorWritable partWritable = new VectorWritable();
+	private IntWritable partNumberWritable = new IntWritable();
 
 	protected void map(
 			IntWritable key,
 			VectorWritable value,
-			org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, SamplePartition>.Context context)
+			org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, VectorWritable>.Context context)
 			throws java.io.IOException, InterruptedException {
 
 		int offset = 0;
-		int lastIndex = numPartitions - 1;
-		boolean isFirstMap = isFirstPair
-				&& context.getTaskAttemptID().getId() == 0;
-		for (int i = 0; i < lastIndex; i++) {
-
-			context.write(
-					new IntWritable(i),
-					getSamplePartition(value.get(), offset, numColsPerPart,
-							false));
-
-			// only the first mapper sends the indices of the columns of each
-			// partition
-			if (isFirstMap) {
-				context.write(
-						new IntWritable(i),
-						getColIndices(offset, numColsPerPart, false, value
-								.get().size()));
-			}
+		for (int part = 0; part < pMinusOne; part++) {
+			partNumberWritable.set(part);
+			partWritable.set(getPart(value.get(), offset, numColsPerPart));
+			context.write(partNumberWritable, partWritable);
 			offset += numColsPerPart;
 		}
-		context.write(new IntWritable(lastIndex),
-				getSamplePartition(value.get(), offset, numColsPerPart, true));
-		if (isFirstMap) {
-			context.write(
-					new IntWritable(lastIndex),
-					getColIndices(offset, numColsPerPart, true, value.get()
-							.size()));
-		}
-		isFirstPair = false;
+		partNumberWritable.set(pMinusOne);
+		partWritable.set(getPart(value.get(), offset, value.get().size()
+				- offset));
+		context.write(partNumberWritable, partWritable);
 	};
 
-	private SamplePartition getSamplePartition(Vector features, int offset,
-			int size, boolean isLastPart) {
-		if (isLastPart) {
-			size = features.size() - offset;
-		}
-		DoubleWritable[] part = new DoubleWritable[size];
-		for (int i = 0; i < size; i++) {
-			part[i] = new DoubleWritable(features.getQuick(i));
+	private double tmpVal;
 
+	private RandomAccessSparseVector getPart(Vector v, int offset, int length) {
+		RandomAccessSparseVector partialVector = new RandomAccessSparseVector(
+				length);
+		for (int i = 0; i < length; i++) {
+			if ((tmpVal = v.getQuick(offset + i)) != 0)
+				partialVector.set(i, tmpVal);
 		}
-		SamplePartition sp = new SamplePartition();
-		sp.setIndices(false);
-		sp.setSamplePart(part);
-		return sp;
+		return partialVector;
 	}
 
-	private SamplePartition getColIndices(int offset, int partSize,
-			boolean isLastPart, int featureSize) {
-		if (isLastPart) {
-			partSize = featureSize - offset;
-		}
-		IntWritable[] indices = new IntWritable[partSize];
-		for (int i = 0; i < partSize; i++) {
-			indices[i] = new IntWritable(offset + i);
-		}
-		SamplePartition sp = new SamplePartition();
-		sp.setIndices(true);
-		sp.setColIndices(indices);
-		return sp;
-	}
 }

@@ -1,5 +1,6 @@
 package ca.uwaterloo.cpami.css.baselines;
 
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -9,7 +10,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.mahout.math.hadoop.DistributedRowMatrix;
 import org.apache.mahout.math.hadoop.stochasticsvd.SSVDSolver;
 
-import ca.uwaterloo.cpami.css.greedy.mapreduce.rowpersample.Driver;
 import ca.uwaterloo.cpami.mahout.matrix.utils.CentralizedOrthogonalization;
 
 public class MainDebug {
@@ -69,9 +69,11 @@ public class MainDebug {
 			fs.delete(new Path(tmpMatC), true);
 			fs.delete(new Path(cssNewMatrix), true);
 			long time = System.currentTimeMillis();
+			/*
 			Driver.main(new String[] { A.getRowPath().toString(), tmpCSS,
 					numPartitions + "", cssNewMatrix, numCols + "", k + "",
 					l + "" });
+					*/
 			long duration = System.currentTimeMillis() - time;
 			// Orthogonalization
 			CentralizedOrthogonalization.orthonormalize(new Path(cssNewMatrix),
