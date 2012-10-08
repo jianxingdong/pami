@@ -26,7 +26,7 @@ public class Main {
 	static FileSystem fs;
 	static String tmpMatA = "/tmp/Atmp/tA";
 
-	static int numReducers = 15;
+	static int numReducers = 9;
 
 	static Configuration config = new Configuration();
 	static {
@@ -39,8 +39,8 @@ public class Main {
 		}
 	}
 
-	static void runGCSS(int k) throws IOException, InterruptedException,
-			ClassNotFoundException {
+	static void runGCSS(int k, int numPartitions, float l) throws IOException,
+			InterruptedException, ClassNotFoundException {
 		DistributedRowMatrix A = new DistributedRowMatrix(
 				new Path(origDataFile), new Path(tmpMatA), numRows, numCols);
 		A.setConf(config);
@@ -50,11 +50,9 @@ public class Main {
 		String tmpCSS = "/tmp/css/tcc";
 		String tmpMatC = "/tmp/Ctmp/tc";
 
-		int numPartitions = 40;
 		String cssNewMatrix = "greedycss/C";
 		String cssNewMatrixOrth = "greedycss/COrth";
 		String tmpNormDir = "/tmp/tmpNorm";
-		float l = 0.2f;
 		GCSSDriver gcssDriver = new GCSSDriver();
 		// for (int k : ks) {
 		System.out.println(k);
@@ -64,8 +62,12 @@ public class Main {
 		fs.delete(new Path(cssNewMatrixOrth), true);
 		fs.delete(new Path(tmpNormDir), true);
 		long time = System.currentTimeMillis();
-		gcssDriver.run(A.getRowPath().toString(), tmpCSS, numPartitions,
-				cssNewMatrix, numRows, numCols, k, l, numReducers);
+		boolean succuss = gcssDriver.run(A.getRowPath().toString(), tmpCSS,
+				numPartitions, cssNewMatrix, numRows, numCols, k, l,
+				numReducers);
+		if (!succuss) {
+			throw new RuntimeException("GCSS Failed");
+		}
 		long duration = System.currentTimeMillis() - time;
 		// Orthogonalization
 		System.out.println("start orth");
@@ -175,12 +177,9 @@ public class Main {
 	}
 
 	static void repartitionA() throws IOException, InterruptedException,
-			ClassNotFoundException {
-		DistributedRowMatrix A = new DistributedRowMatrix(
-				new Path(origDataFile), new Path(tmpMatA), numRows, numCols);
-		A.setConf(config);
+			ClassNotFoundException {		
 		Helpers.repartitionMatrix(new Path("/common/B"), new Path("/common/A"),
-				1);
+				1);		
 	}
 
 	public static void main(String[] args) throws IOException,
@@ -197,9 +196,13 @@ public class Main {
 		// runRandomSelection(Integer.parseInt(args[0]));
 		if (args.length > 3)
 			repartitionA();
-		
-		runSSVD(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
-				Integer.parseInt(args[2]));
+
+		runGCSS(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+				Float.parseFloat(args[2]));
+		/*
+		 * runSSVD(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+		 * Integer.parseInt(args[2]));
+		 */
 		// System.out.println(">>>>>>>>>Random Selection-DONE");
 		// runGCSS();
 		// System.out.println(">>>>>>>>>GCSS-DONE");

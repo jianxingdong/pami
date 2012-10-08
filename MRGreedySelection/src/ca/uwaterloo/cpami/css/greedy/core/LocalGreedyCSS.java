@@ -150,13 +150,9 @@ public class LocalGreedyCSS {
 		SparseMatrix mx = Utilis.loadSparseMatrix(
 				"/home/ahmed/Desktop/Thesis/ICDM13/dataset/kos-full.txt", ",",
 				6906, 3430);
-		System.gc();
-		System.gc();
-		System.out.println(mx.viewRow(0).getNumNondefaultElements());
-		System.out.println(Runtime.getRuntime().freeMemory());
-		// Matrix mx = mat.viewPart(0, 100, 0, 3430);
-		// mx = mx.transpose();
-		//Integer[] cols = new LocalGreedyCSS().selectColumnSubset(mx, 10);
+		Matrix mx1 = mx.viewPart(0, 100, 0, 3430);
+		mx1 = mx1.transpose();
+		Integer[] cols = new LocalGreedyCSS().selectColumnSubset(mx, 10);
 		//for (int i = 0; i < 10; i++)
 			//System.out.print(cols[i] + " ");
 	}

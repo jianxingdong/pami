@@ -14,16 +14,22 @@ import org.apache.mahout.math.VectorWritable;
 
 public class GCSSDriver {
 
-	public void run(String originalDataFile, String tempSelectionFile,
+	public boolean run(String originalDataFile, String tempSelectionFile,
 			int numPartitions, String selectedColumnsFile, int numRows,
 			int numColumns, int k, float l, int numReducers)
 			throws IOException, InterruptedException, ClassNotFoundException {
-		getPartitionSelectionJob(originalDataFile, tempSelectionFile,
-				numPartitions, numRows, numColumns, k, l, numReducers)
-				.waitForCompletion(false);
+		Job partitionSelectionJob = getPartitionSelectionJob(originalDataFile,
+				tempSelectionFile, numPartitions, numRows, numColumns, k, l,
+				numReducers);
+		partitionSelectionJob.waitForCompletion(false);
+		if (!partitionSelectionJob.isSuccessful())
+			return false;
 
-		getFinalSelectionJob(tempSelectionFile, selectedColumnsFile, numRows, k)
-				.waitForCompletion(false);
+		Job finalSelectionJob = getFinalSelectionJob(tempSelectionFile,
+				selectedColumnsFile, numRows, k);
+		finalSelectionJob.waitForCompletion(false);
+		return finalSelectionJob.isSuccessful();
+
 	}
 
 	private Job getPartitionSelectionJob(String originalDataFile,
@@ -61,7 +67,7 @@ public class GCSSDriver {
 		FileInputFormat.addInputPaths(job, tempSelectionFile);
 		FileOutputFormat.setOutputPath(job, new Path(selectedColumnsFile));
 		job.setMapperClass(FinalSelectionMapper.class);
-		job.setReducerClass(PartitionSelectionReducer.class);
+		job.setReducerClass(FinalSelectionReducer.class);
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(VectorWritable.class);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
