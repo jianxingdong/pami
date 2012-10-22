@@ -37,11 +37,15 @@ public class AllRowsRecordReaders extends
 		this.in = new SequenceFile.Reader(fs, path, conf);
 		this.end = split.getStart() + split.getLength();
 		this.conf = conf;
+		//System.out.println("end: " + end);
+		//System.out.println("in.pos: " + in.getPosition());
+		//System.out.println("split start: " + split.getStart());
 
 		if (split.getStart() > in.getPosition())
 			in.sync(split.getStart()); // sync to start
 
 		this.start = in.getPosition();
+		//System.out.println("start after sync: " + this.start);
 		more = start < end;
 	}
 
@@ -70,13 +74,23 @@ public class AllRowsRecordReaders extends
 			VectorWritable tmpVctr = new VectorWritable();
 			Map<Integer, RandomAccessSparseVector> rowMap = new HashMap<Integer, RandomAccessSparseVector>();
 			Integer numRow = 0, numCols;
-			while (more && in.getPosition() < end) {
-				more = in.next(dummy, tmpVctr);
+			//TODO to be optimized
+			while (in.getPosition() < end) {			
+				more = in.next(dummy, tmpVctr);				
 				if (more) {
+					//System.out.println(dummy);
 					rowMap.put(numRow++,
 							new RandomAccessSparseVector(tmpVctr.get()));
 				}
 			}
+			more = in.next(dummy, tmpVctr);				
+			while (more&&!in.syncSeen()) {
+				//System.out.println(dummy);
+				rowMap.put(numRow++,
+						new RandomAccessSparseVector(tmpVctr.get()));
+				more = in.next(dummy, tmpVctr);
+			}
+			//System.out.println("in.pos when done: " + in.getPosition());
 			numCols = (numRow == 0) ? 0 : rowMap.get(0).size();
 			this.splitRows = new MatrixWritable(new SparseMatrix(numRow,
 					numCols, rowMap));
@@ -95,5 +109,18 @@ public class AllRowsRecordReaders extends
 	@Override
 	public void initialize(InputSplit arg0, TaskAttemptContext arg1)
 			throws IOException, InterruptedException {
+	}
+
+	public static void main(String[] args) throws IOException {
+		Configuration conf = new Configuration();
+		FileSystem fs = FileSystem.get(conf);
+		SequenceFile.Reader in = new SequenceFile.Reader(fs, new Path(
+				"orth/nips/orth"), conf);
+
+		IntWritable dummy = new IntWritable();
+		VectorWritable tmpVctr = new VectorWritable();
+		while (in.next(dummy, tmpVctr)) {
+			System.out.println(dummy + "\t" + in.getPosition()+"\t"+in.syncSeen());
+		}
 	}
 }

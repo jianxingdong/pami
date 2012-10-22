@@ -1,5 +1,6 @@
 package ca.uwaterloo.cpami.css.greedy.mapreduce.rowpersample.onepass;
 
+
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.mahout.math.Matrix;
@@ -7,14 +8,15 @@ import org.apache.mahout.math.MatrixWritable;
 import org.apache.mahout.math.VectorWritable;
 
 import ca.uwaterloo.cpami.css.greedy.core.LocalGreedyCSS;
+import ca.uwaterloo.cpami.css.greedy.core.ProgressNotifiable;
 
 //partition-based selection
 //output the matrix of the selected rows
 public class GCSSOnePassMapper extends
-		Mapper<NullWritable, MatrixWritable, NullWritable, VectorWritable> {
+		Mapper<NullWritable, MatrixWritable, NullWritable, VectorWritable> implements ProgressNotifiable{
 
 	private int k;
-
+	private Context context;
 	@Override
 	protected void setup(
 			org.apache.hadoop.mapreduce.Mapper<NullWritable, MatrixWritable, NullWritable, VectorWritable>.Context context)
@@ -29,6 +31,7 @@ public class GCSSOnePassMapper extends
 			MatrixWritable value,
 			org.apache.hadoop.mapreduce.Mapper<NullWritable, MatrixWritable, NullWritable, VectorWritable>.Context context)
 			throws java.io.IOException, InterruptedException {
+		this.context = context;
 		long time = System.currentTimeMillis();
 		// select from the rows
 		Matrix mx = value.get();
@@ -41,7 +44,7 @@ public class GCSSOnePassMapper extends
 				+ (Runtime.getRuntime().totalMemory() - Runtime.getRuntime()
 						.freeMemory()));
 
-		Integer[] selectedColumns = new LocalGreedyCSS().selectColumnSubset(mx,
+		Integer[] selectedColumns = new LocalGreedyCSS(this).selectColumnSubset(mx,
 				k);
 		for (int c : selectedColumns) {
 			rowWritable.set(mx.viewRow(c));
@@ -52,4 +55,9 @@ public class GCSSOnePassMapper extends
 	};
 
 	private final VectorWritable rowWritable = new VectorWritable();
+
+	@Override
+	public void progress() {
+		context.progress();
+	}
 }

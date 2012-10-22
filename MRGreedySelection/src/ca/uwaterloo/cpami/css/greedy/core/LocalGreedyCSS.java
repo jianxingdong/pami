@@ -15,6 +15,18 @@ import org.apache.mahout.math.Vector;
 //s2 -> sparsity of A'*A >> s1 (maybe = 1 i.e. A'*A is closer to dense)
 public class LocalGreedyCSS {
 
+	private ProgressNotifiable progressNotifiable;
+	private final static int PROGRESS_REPORT_RATE = 10;// report every 10
+														// columns
+
+	public LocalGreedyCSS() {
+		this(null);
+	}
+
+	public LocalGreedyCSS(ProgressNotifiable progressNotifiable) {
+		this.progressNotifiable = progressNotifiable;
+	}
+
 	// to do random partitioning, take another matrix target
 	// the algorithm takes the Transpose of the original matrix to tighten the
 	// memory requirements
@@ -44,6 +56,10 @@ public class LocalGreedyCSS {
 		Matrix V = new DenseMatrix(p, k); // pxk
 
 		for (int t = 0; t < k; t++) {
+			// report progress
+			if (progressNotifiable != null && t % PROGRESS_REPORT_RATE == 0) {
+				progressNotifiable.progress();
+			}
 			int l = findMaxRatio(f, g, n, selectedIndicesHash);
 			if (l == -1) {
 				System.out.println("l == -1");

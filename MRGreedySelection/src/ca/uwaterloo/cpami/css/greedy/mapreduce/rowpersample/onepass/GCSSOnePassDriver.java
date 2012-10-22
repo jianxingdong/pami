@@ -69,7 +69,7 @@ public class GCSSOnePassDriver {
 		// boolean r = new GCSSOnePassDriver().run("orth/nips/orth", 100, 166,
 		// 450560l, 67108864l, "/C/cols", new Configuration());
 		boolean r = new GCSSOnePassDriver().run("orth/nips/orth", 100, 166,
-				450560l, 450560l, "/C/cols", new Configuration());
+				450665l, 450665l, "/C/cols", new Configuration());
 		System.out.println("isSuccessful: " + r);
 	}
 }
