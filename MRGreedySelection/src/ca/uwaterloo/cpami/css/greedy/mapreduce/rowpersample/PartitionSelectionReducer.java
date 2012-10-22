@@ -21,6 +21,7 @@ public class PartitionSelectionReducer extends
 			throws java.io.IOException, InterruptedException {
 		this.k = context.getConfiguration().getInt("subsetSize", 0);
 		this.numRows = context.getConfiguration().getInt("numRows", 0);
+		
 	};
 
 	private IntWritable rowIndxWritable = new IntWritable();

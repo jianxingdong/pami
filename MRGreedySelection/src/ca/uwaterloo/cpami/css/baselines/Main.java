@@ -105,6 +105,8 @@ public class Main {
 		fs.delete(new Path(tmpMatC), true);
 		fs.delete(new Path(randomNewMatrix), true);
 		fs.delete(new Path(tmpNormDir), true);
+		fs.delete(new Path(randomNewMatrixOrth), true);
+
 		long time = System.currentTimeMillis();
 		randomSelectionJob.runRandomSelection(A.getRowPath().toString(),
 				numCols, k, randomNewMatrix);
@@ -147,7 +149,7 @@ public class Main {
 		SSVDSolver ssvdSolver = new SSVDSolver(config,
 				new Path[] { A.getRowPath() }, new Path(ssvdOutput),
 				aBlockRows, k, p, numReducers);
-		ssvdSolver.setQ(1);
+		ssvdSolver.setQ(2);
 		ssvdSolver.setComputeV(false);
 		long time = System.currentTimeMillis();
 		ssvdSolver.run();
@@ -177,13 +179,42 @@ public class Main {
 	}
 
 	static void repartitionA() throws IOException, InterruptedException,
-			ClassNotFoundException {		
+			ClassNotFoundException {
 		Helpers.repartitionMatrix(new Path("/common/B"), new Path("/common/A"),
-				1);		
+				1);
 	}
 
 	public static void main(String[] args) throws IOException,
 			InterruptedException, ClassNotFoundException {
+		System.out.println("runSSVD(20, 15, 10000)");
+		runSSVD(20, 15, 10000);
+		System.out.println("runGCSS(20, 40, 0.3f)");
+		runGCSS(20, 40, 0.3f);
+
+		System.out.println("runSSVD(100, 15, 10000)");
+		runSSVD(100, 15, 10000);
+		System.out.println("runGCSS(100, 40, 0.3f)");
+		runGCSS(100, 40, 0.3f);
+		System.out.println("runGCSS(20, 40, 0.4f)");
+		runGCSS(20, 40, 0.4f);
+		System.out.println("runSSVD(20, 5, 10000)");
+		runSSVD(20, 5, 10000);
+		System.out.println("runSSVD(20, 5, 1000)");
+		runSSVD(20, 5, 1000);
+
+		/*
+		 * System.out.println("A's norm: " + new
+		 * FrobeniusNormJob().getFrobNorm("/common/A", "/tmpfrob"));
+		 * Helpers.repartitionMatrix(new Path("/common/A"), new Path("/AParts"),
+		 * 200);
+		 * 
+		 * FileSystem fs = FileSystem.get(new Configuration()); FileStatus[]
+		 * files = fs.listStatus(new Path("/AParts")); for (FileStatus status :
+		 * files) { Path p = status.getPath(); if (!p.getName().startsWith("_"))
+		 * SequenceFileToCSV.sequenceFileToCSV(p.toString(), "/ACSV/" +
+		 * p.getName(), ","); }
+		 */
+
 		/*
 		 * DistributedRowMatrix A = new DistributedRowMatrix( new
 		 * Path("s3n://greedycss/pubmed-doc-word.dat"), new Path(tmpMatA),
@@ -194,11 +225,14 @@ public class Main {
 		 * (), 200000, "/common/A");
 		 */
 		// runRandomSelection(Integer.parseInt(args[0]));
-		if (args.length > 3)
-			repartitionA();
+		// if (args.length > 3)
+		// repartitionA();
 
-		runGCSS(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
-				Float.parseFloat(args[2]));
+		// /runGCSS(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+		// Float.parseFloat(args[2]));
+
+		// runGCSS(20, 40, 0.2f);
+		// runSSVD(20, 5, 1000);
 		/*
 		 * runSSVD(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 		 * Integer.parseInt(args[2]));

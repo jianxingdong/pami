@@ -19,7 +19,7 @@ public class LocalGreedyCSS {
 	// the algorithm takes the Transpose of the original matrix to tighten the
 	// memory requirements
 	public Integer[] selectColumnSubset(Matrix sourceMatTranspose, int k) {
-
+		long startTime = System.currentTimeMillis();
 		Matrix GTranspose = Utilis.calcATimeATranspose(sourceMatTranspose); // nxp
 		int n = GTranspose.numRows();
 		int p = GTranspose.numCols();
@@ -103,6 +103,8 @@ public class LocalGreedyCSS {
 			}
 		}
 
+		System.out.println("LocalGreedyCSS: m=" + m + ", n=" + n + ", k=" + k
+				+ ", time: " + (System.currentTimeMillis() - startTime));
 		return selectedIndices.toArray(new Integer[] {});
 	}
 
@@ -153,7 +155,7 @@ public class LocalGreedyCSS {
 		Matrix mx1 = mx.viewPart(0, 100, 0, 3430);
 		mx1 = mx1.transpose();
 		Integer[] cols = new LocalGreedyCSS().selectColumnSubset(mx, 10);
-		//for (int i = 0; i < 10; i++)
-			//System.out.print(cols[i] + " ");
+		// for (int i = 0; i < 10; i++)
+		// System.out.print(cols[i] + " ");
 	}
 }

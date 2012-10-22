@@ -45,6 +45,7 @@ public class GCSSDriver {
 		Job job = new Job(config);
 		job.setJarByClass(GCSSDriver.class);
 		FileInputFormat.addInputPaths(job, originalDataFile);
+		
 		FileOutputFormat.setOutputPath(job, new Path(tempSelectionFile));
 		job.setMapperClass(PartitionSelectionMapper.class);
 		job.setReducerClass(PartitionSelectionReducer.class);
@@ -52,8 +53,7 @@ public class GCSSDriver {
 		job.setOutputValueClass(VectorWritable.class);
 		job.setNumReduceTasks(numReducers);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
-		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);		
 		return job;
 	}
 

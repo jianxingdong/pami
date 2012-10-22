@@ -31,7 +31,7 @@ public class RandomSelectionJob {
 
 		protected void setup(
 				org.apache.hadoop.mapreduce.Mapper<IntWritable, VectorWritable, IntWritable, VectorWritable>.Context context)
-				throws IOException, InterruptedException {			
+				throws IOException, InterruptedException {
 			final FileSystem fs = FileSystem.get(context.getConfiguration());
 			FSDataInputStream in = fs.open(new Path(context.getConfiguration()
 					.get("selectedIndicesFile")));
@@ -56,7 +56,7 @@ public class RandomSelectionJob {
 
 			Vector original = value.get();
 			Vector selected = new RandomAccessSparseVector(
-					selectedIndices.size());			
+					selectedIndices.size());
 			int i = 0;
 			for (int c : selectedIndices) {
 				if ((vctVal = original.getQuick(c)) != 0)
@@ -83,7 +83,7 @@ public class RandomSelectionJob {
 		// writing the random list to HDFS
 		final Configuration conf = new Configuration();
 		final FileSystem fs = FileSystem.get(conf);
-		FSDataOutputStream out = fs.create(new Path(COLS_PATH));
+		FSDataOutputStream out = fs.create(new Path(COLS_PATH), true);
 		for (int i = 0; i < k; i++) {
 			System.out.println("selected: " + l.get(i));
 			out.writeInt(l.get(i));
