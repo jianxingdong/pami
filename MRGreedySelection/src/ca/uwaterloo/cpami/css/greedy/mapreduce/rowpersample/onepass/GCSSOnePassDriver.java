@@ -1,5 +1,6 @@
 package ca.uwaterloo.cpami.css.greedy.mapreduce.rowpersample.onepass;
 
+
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -68,8 +69,13 @@ public class GCSSOnePassDriver {
 			InterruptedException, ClassNotFoundException {
 		// boolean r = new GCSSOnePassDriver().run("orth/nips/orth", 100, 166,
 		// 450560l, 67108864l, "/C/cols", new Configuration());
-		boolean r = new GCSSOnePassDriver().run("orth/nips/orth", 100, 166,
-				450665l, 450665l, "/C/cols", new Configuration());
+		long time = System.currentTimeMillis();
+
+		boolean r = new GCSSOnePassDriver().run("/common/A",
+				Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+				Long.parseLong(args[2]), Long.parseLong(args[3]), "/C2/cols",
+				new Configuration());
 		System.out.println("isSuccessful: " + r);
+		System.out.println("time: " + (System.currentTimeMillis() - time));
 	}
 }
