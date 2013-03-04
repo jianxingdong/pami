@@ -39,8 +39,9 @@ FullKernel <-function(X,kernel){
  return(fullKernel)
 }
 
-kernel <- polydot(degree = 1, scale = 1, offset = 0)
-Y <- BasicNystrom(t(test$x),10,kernel,6)
-fk <- FullKernel(t(test$x)[,1:100],rbfkernel)
+#kernel <- polydot(degree = 1, scale = 1, offset = 0)
+kernel <- rbfdot(sigma=0.2)
+Y <- BasicNystrom(t(test$x),100,kernel,40)
+fk <- FullKernel(t(test$x)[,1:100],kernel)
 approxKernel <- crossprod(Y[,1:100])
 norm(approxKernel-fk, type="F")
