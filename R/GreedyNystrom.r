@@ -4,45 +4,54 @@
 #c number of groups
 GreedyNystrom <- function(X,m, kernelFunc,k,c){
   K <- FullKernel(X, kernelFunc)
-  n <- dim(X)[2]  
+  n <- dim(X)[2]    
   #compute rand perm matrix
   rndGroups <- sample(c,n,replace=TRUE)
-  G <- matrix(nrow=c,ncol=n)
+  
+  G <- matrix(nrow=n,ncol=c)
   for(j in 1:c){
-    G[j,] <- rowSums(K[,rndGroups=j])
+    G[,j] <- colSums(K[rndGroups==j,])
   }
   #init f and g
-  f <- apply(G,2,function(x){sum(x^2)})
+  f <- rowSums(G^2)    
   g <- diag(K)
+  
   selectedCols <- c()
   W <- matrix(nrow=n,ncol=0)
   V <- matrix(nrow=c,ncol=0)
   #selecting columns
   for(t in 1:m){
-    scores <- f/g
+    scores <- f/g  
     scores[selectedCols] <- scores[is.nan(scores)] <- scores[is.infinite(scores)] <- 0
-    q <- which.max(f/g)    
+    q <- which.max(scores)    
     
     if(scores[q]==0){
       print("max score is zero")
       break;  
     }    
     
-    delta <- ifelse(t==1, K[,q], K[,q] - W %*% W[q,])
-    gam <- ifelse(t==1, G[,q], G[,q] - V %*% W[q,])        
-    alphaSqrt = sqrt(delta[q])
+    delta <- K[,q]
+    gam <- G[q,]
+    if(t>1){
+      delta <- delta - W %*% W[q,]
+      gam <- gam - V %*% W[q,]
+    }
+    alphaSqrt <- sqrt(delta[q])
     w <- delta/alphaSqrt
     v <- gam/alphaSqrt
     #update f and g
-    r2 <- ifelse(t==1,0, W %*% (v%*%V))
+    r2 <- 0
+    if(t==1){
+      r2 <- W %*% t(v%*%V)
+    }      
     
     if(sum(delta^2)<1e-10 || alphaSqrt<1e-10){
       print("t > rank(K)")
       break
     }
   
-    r1 <- V%*%v
-    r3 <- w^2
+    r1 <- G %*% v
+    r3 <- w^2    
     
     f <- f - 2*(w * (r1 - r2)) + (sum(v^2))*r3
     g <- g - r3
@@ -56,8 +65,8 @@ GreedyNystrom <- function(X,m, kernelFunc,k,c){
     selectedCols <- c(selectedCols, q)
   }
   #compute the embedding
-  e <- eigenn(W%*%t(W))
-  Y <- t(e$vectors[,1:k])%*%W
+  e <- eigen(crossprod(W))
+  Y <- W%*%e$vectors[,1:k]
   return(Y)
 }
 
@@ -73,3 +82,6 @@ FullKernel <-function(X,kernelFunc){
   }
   return(fullKernel)
 }
+
+kernelFunc <- polydot(degree = 1, scale = 1, offset = 0)
+Y <- GreedyNystrom(t(test$x[1:100,]),10,kernelFunc,5,20)
