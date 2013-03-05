@@ -1,24 +1,30 @@
 #Computes an approximate embedding based on Greedy Nystrom
 
 #same params as BasicNystrom
-#c number of groups
-GreedyNystrom <- function(X,m, kernelFunc,k,c){
+#p number of groups
+GreedyNystrom <- function(X,m, kernelFunc,k,p){
   K <- FullKernel(X, kernelFunc)
   n <- dim(X)[2]    
   #compute rand perm matrix
-  rndGroups <- sample(c,n,replace=TRUE)
+  rndGroups <- sample(c(1:p,sample(p,n-p,replace=TRUE)),n,replace=FALSE)
   
-  G <- matrix(nrow=n,ncol=c)
-  for(j in 1:c){
-    G[,j] <- colSums(K[rndGroups==j,])
+  G <- matrix(nrow=n,ncol=p)
+  for(j in 1:p){
+    groupCols <- rndGroups==j
+    if(sum(groupCols)==1){
+      G[,j] <- K[groupCols,]
+    }else{
+      G[,j] <- colSums(K[rndGroups==j,])  
+    }      
   }
+  
   #init f and g
-  f <- rowSums(G^2)    
+  f <- colSums(G^2)    
   g <- diag(K)
   
   selectedCols <- c()
   W <- matrix(nrow=n,ncol=0)
-  V <- matrix(nrow=c,ncol=0)
+  V <- matrix(nrow=p,ncol=0)
   #selecting columns
   for(t in 1:m){
     scores <- f/g  
@@ -29,7 +35,6 @@ GreedyNystrom <- function(X,m, kernelFunc,k,c){
       print("max score is zero")
       break;  
     }    
-    
     delta <- K[,q]
     gam <- G[q,]
     if(t>1){
@@ -37,12 +42,13 @@ GreedyNystrom <- function(X,m, kernelFunc,k,c){
       gam <- gam - V %*% W[q,]
     }
     alphaSqrt <- sqrt(delta[q])
+    print(alphaSqrt)
     w <- delta/alphaSqrt
     v <- gam/alphaSqrt
     #update f and g
     r2 <- 0
-    if(t==1){
-      r2 <- W %*% t(v%*%V)
+    if(t>1){
+      r2 <- W %*% t(t(v)%*%V)
     }      
     
     if(sum(delta^2)<1e-10 || alphaSqrt<1e-10){
@@ -67,6 +73,7 @@ GreedyNystrom <- function(X,m, kernelFunc,k,c){
   #compute the embedding
   e <- eigen(crossprod(W))
   Y <- W%*%e$vectors[,1:k]
+  print(selectedCols)
   return(Y)
 }
 
