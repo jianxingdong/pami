@@ -19,10 +19,10 @@ RBFFourierComponents <- function(m,r,fcParams){
  return(mvrnorm(r,rep(0,m),diag(1/fcParams$sigma,nrow=m,ncol=m)))
 }
 
-fcParams <- factor()
-fcParams$sigma <- 0.2
-Y <- rffEmbedding(t(test$x),20,RBFFourierComponents, fcParams)
-approxKernel <- crossprod(Y[,1:100])
-kernel <- rbfdot(sigma=0.2)
-fk <- FullKernel(t(test$x)[,1:100],kernel)
-norm(approxKernel-fk, type="F")
+#fcParams <- list()
+#fcParams$sigma <- 0.2
+#Y <- rffEmbedding(t(test$x),20,RBFFourierComponents, fcParams)
+#approxKernel <- crossprod(Y[,1:100])
+#kernel <- rbfdot(sigma=0.2)
+#fk <- FullKernel(t(test$x)[,1:100],kernel)
+#norm(approxKernel-fk, type="F")

@@ -4,28 +4,27 @@
 #p number of groups
 GreedyNystrom <- function(X,m, kernelFunc,k,p){
   K <- FullKernel(X, kernelFunc)
+  print("computed the kernel")
   n <- dim(X)[2]    
   #compute rand perm matrix
-  rndGroups <- sample(c(1:p,sample(p,n-p,replace=TRUE)),n,replace=FALSE)
-  
+  rndGroups <- sample(c(1:p,sample(p,n-p,replace=TRUE)),n,replace=FALSE)  
   G <- matrix(nrow=n,ncol=p)
   for(j in 1:p){
     groupCols <- rndGroups==j
     if(sum(groupCols)==1){
       G[,j] <- K[groupCols,]
     }else{
-      G[,j] <- colSums(K[rndGroups==j,])  
+      G[,j] <- colSums(K[groupCols,])  
     }      
-  }
-  
+  }  
   #init f and g
   f <- colSums(G^2)    
-  g <- diag(K)
-  
+  g <- diag(K)  
   selectedCols <- c()
   W <- matrix(nrow=n,ncol=0)
   V <- matrix(nrow=p,ncol=0)
   #selecting columns
+  print("starting the selection")
   for(t in 1:m){
     scores <- f/g  
     scores[selectedCols] <- scores[is.nan(scores)] <- scores[is.infinite(scores)] <- 0
@@ -41,7 +40,7 @@ GreedyNystrom <- function(X,m, kernelFunc,k,p){
       delta <- delta - W %*% W[q,]
       gam <- gam - V %*% W[q,]
     }
-    alphaSqrt <- sqrt(delta[q])
+    alphaSqrt <- sqrt(delta[q])    
     print(alphaSqrt)
     w <- delta/alphaSqrt
     v <- gam/alphaSqrt
@@ -60,10 +59,8 @@ GreedyNystrom <- function(X,m, kernelFunc,k,p){
     r3 <- w^2    
     
     f <- f - 2*(w * (r1 - r2)) + (sum(v^2))*r3
-    g <- g - r3
-    
-    f[q] <- g[q] <- f[f<1e-10] <- g[g<1e-10] <- 0    
-    
+    g <- g - r3    
+    f[q] <- g[q] <- f[f<1e-10] <- g[g<1e-10] <- 0            
     
     #updates for the next iterations
     W <- cbind(W,w)
@@ -73,7 +70,8 @@ GreedyNystrom <- function(X,m, kernelFunc,k,p){
   #compute the embedding
   e <- eigen(crossprod(W))
   Y <- W%*%e$vectors[,1:k]
-  print(selectedCols)
+  
+##we can result W which is of rank m  
   return(Y)
 }
 
@@ -90,5 +88,7 @@ FullKernel <-function(X,kernelFunc){
   return(fullKernel)
 }
 
-kernelFunc <- polydot(degree = 1, scale = 1, offset = 0)
-Y <- GreedyNystrom(t(test$x[1:100,]),10,kernelFunc,5,20)
+#kernelFunc <- polydot(degree = 1, scale = 1, offset = 0)
+#Y <- GreedyNystrom(t(test$x[1:100,]),10,kernelFunc,5,20) 
+#??what is wrong with 9 groups
+#??alphaSqrt is always 1?
