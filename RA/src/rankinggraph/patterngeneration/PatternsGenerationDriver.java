@@ -1,10 +1,10 @@
 package rankinggraph.patterngeneration;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
+
+import rankinggraph.QueriesReader;
+import rankinggraph.QueryInfo;
 
 public class PatternsGenerationDriver implements PatternGenerationNotifiable {
 
@@ -27,44 +27,18 @@ public class PatternsGenerationDriver implements PatternGenerationNotifiable {
 	 */
 	public void generatePatterns(String queriesFilePath, String posFilePath,
 			String neFilePath, String outputFilePath) throws IOException {
-		BufferedReader queriesReader = new BufferedReader(new FileReader(
-				queriesFilePath));
-		BufferedReader posReader = new BufferedReader(new FileReader(
-				posFilePath));
-		BufferedReader neReader = new BufferedReader(new FileReader(neFilePath));
+
 		patternsWriter = new PrintWriter(outputFilePath);
-		String query = null;
+		QueriesReader queriesReader = new QueriesReader(queriesFilePath,
+				posFilePath, neFilePath);
+		QueryInfo query = null;
 		int count = 0;
-		while ((query = queriesReader.readLine()) != null) {
+		while ((query = queriesReader.next()) != null) {
 			System.out.println(count++);
-			QueryInfo queryInfo = createQueryInfo(query, posReader.readLine(),
-					neReader.readLine());
-			patternsGenerator.generatePatterns(queryInfo);
+			patternsGenerator.generatePatterns(query);
 		}
 		queriesReader.close();
-		posReader.close();
-		neReader.close();
 		patternsWriter.close();
-	}
-
-	private final static String FILES_SPLIT_REGEX = "\\s+";
-	private final static String NULL_NE = "O";
-
-	private QueryInfo createQueryInfo(String query, String pos, String ne) {
-		String[] queryTerms = query.split(FILES_SPLIT_REGEX);
-		String[] partOfSpeeches = pos.split(FILES_SPLIT_REGEX);
-		String[] namedEntities = ne.split(FILES_SPLIT_REGEX);
-		QueryInfo queryInfo = new QueryInfo();
-		queryInfo.setQueryTerms(queryTerms);
-		queryInfo.setPartOfSpeeches(partOfSpeeches);
-		HashMap<Integer, String> dectedNamedEntities = new HashMap<Integer, String>();
-		for (int i = 0; i < namedEntities.length; i++) {
-			if (!namedEntities[i].equalsIgnoreCase(NULL_NE)) {
-				dectedNamedEntities.put(i, namedEntities[i]);
-			}
-		}
-		queryInfo.setNamedEntities(dectedNamedEntities);
-		return queryInfo;
 	}
 
 	@Override

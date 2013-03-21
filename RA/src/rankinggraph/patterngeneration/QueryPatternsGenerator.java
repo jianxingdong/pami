@@ -3,6 +3,8 @@ package rankinggraph.patterngeneration;
 import java.util.HashMap;
 import java.util.Set;
 
+import rankinggraph.QueryInfo;
+
 /**
  * 
  * Generates all the possible patterns for a single query given the query terms,

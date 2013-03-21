@@ -1,4 +1,4 @@
-package rankinggraph.patterngeneration;
+package rankinggraph;
 
 import java.util.HashMap;
 
