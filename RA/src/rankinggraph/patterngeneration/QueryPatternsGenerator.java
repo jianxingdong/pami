@@ -28,7 +28,7 @@ public class QueryPatternsGenerator {
 		Set<Integer> keys = namedEntities.keySet();
 		String[] seedPattern = new String[queryInfo.getNumTerms()];
 		for (int k : keys) {
-			seedPattern[k] = "ne:" + namedEntities.get(k);
+			seedPattern[k] = "ne-" + namedEntities.get(k);
 			enumeratePatterns(queryInfo, seedPattern, k, 0);
 		}
 
@@ -60,7 +60,7 @@ public class QueryPatternsGenerator {
 			if (from > initNeIndex) {
 				String ne = queryInfo.getNamedEntities().get(from);
 				if (ne != null) {
-					currentPattern[from] = "ne:" + ne;
+					currentPattern[from] = "ne-" + ne;
 					enumeratePatterns(queryInfo, currentPattern, initNeIndex,
 							from + 1);
 				}

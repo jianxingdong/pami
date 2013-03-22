@@ -88,13 +88,16 @@ public class Utils {
 	}
 
 	public static void main(String[] args) throws IOException {
-		numNamedEntities("data/AITS/v1/v1_ATIS0_NER_7class_s2.txt",
-				"data/AITS/v1/stats/7class-ne-per-q.txt");
-		
-		queryLength("data/AITS/v1/v1_ATIS0-Queries.txt",
-				"data/AITS/v1/stats/q-leng.txt");
-		
-		numUniquePOS("data/AITS/v1/v1_ATIS0_POS_s2.txt",
-				"data/AITS/v1/stats/pos-freq.txt");
+		String[] tkns = tokenize("q1 ne-q2 q3 pos-q4");
+		for(String t:tkns)
+			System.out.println(t);
+//		numNamedEntities("data/AITS/v1/v1_ATIS0_NER_7class_s2.txt",
+//				"data/AITS/v1/stats/7class-ne-per-q.txt");
+//		
+//		queryLength("data/AITS/v1/v1_ATIS0-Queries.txt",
+//				"data/AITS/v1/stats/q-leng.txt");
+//		
+//		numUniquePOS("data/AITS/v1/v1_ATIS0_POS_s2.txt",
+//				"data/AITS/v1/stats/pos-freq.txt");
 	}
 }
