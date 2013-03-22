@@ -3,6 +3,8 @@ package rankinggraph.patterngeneration;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import parsers.Utils;
+
 import rankinggraph.QueriesReader;
 import rankinggraph.QueryInfo;
 
@@ -43,15 +45,8 @@ public class PatternsGenerationDriver implements PatternGenerationNotifiable {
 
 	@Override
 	public void notifyPattern(String[] pattern) {
-		StringBuilder sb = new StringBuilder();
-		int lastIndx = pattern.length - 1;
-		for (int i = 0; i < lastIndx; i++) {
-			sb.append(pattern[i]);
-			sb.append(' ');
-		}
-		sb.append(pattern[lastIndx]);
-		patternsWriter.println(sb.toString());
-		// System.out.println(sb.toString());
+		patternsWriter.println(Utils.glueTokens(pattern));
+		// System.out.println(Utils.glueTokens(pattern));
 	}
 
 	/**

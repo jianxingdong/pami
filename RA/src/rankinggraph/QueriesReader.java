@@ -6,10 +6,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
+import parsers.Utils;
+
 public class QueriesReader {
 
-	private final static String FILES_SPLIT_REGEX = "\\s+";
-	private final static String NULL_NE = "O";
+	public final static String NULL_NE = "O";
+	public final static String NULL_POS = ".";
 
 	private BufferedReader queriesReader, posReader, neReader;
 
@@ -42,9 +44,9 @@ public class QueriesReader {
 	}
 
 	private QueryInfo parse(String query, String pos, String ne) {
-		String[] queryTerms = query.split(FILES_SPLIT_REGEX);
-		String[] partOfSpeeches = pos.split(FILES_SPLIT_REGEX);
-		String[] namedEntities = ne.split(FILES_SPLIT_REGEX);
+		String[] queryTerms = Utils.tokenize(query);
+		String[] partOfSpeeches = Utils.tokenize(pos);
+		String[] namedEntities = Utils.tokenize(ne);
 		QueryInfo queryInfo = new QueryInfo();
 		queryInfo.setQueryTerms(queryTerms);
 		queryInfo.setPartOfSpeeches(partOfSpeeches);

@@ -28,7 +28,7 @@ public class QueryPatternsGenerator {
 		Set<Integer> keys = namedEntities.keySet();
 		String[] seedPattern = new String[queryInfo.getNumTerms()];
 		for (int k : keys) {
-			seedPattern[k] = namedEntities.get(k);
+			seedPattern[k] = "ne:" + namedEntities.get(k);
 			enumeratePatterns(queryInfo, seedPattern, k, 0);
 		}
 
@@ -46,13 +46,16 @@ public class QueryPatternsGenerator {
 			// Substitute something
 
 			// query term
-			currentPattern[from] = queryInfo.getQueryTerms()[from];
+			String term = queryInfo.getQueryTerms()[from];
+			currentPattern[from] = term;
 			enumeratePatterns(queryInfo, currentPattern, initNeIndex, from + 1);
 
-			// or a POS
-			currentPattern[from] = "pos:" + queryInfo.getPartOfSpeeches()[from];
-			enumeratePatterns(queryInfo, currentPattern, initNeIndex, from + 1);
-
+			/*
+			 * // or a POS String pos = queryInfo.getPartOfSpeeches()[from]; if
+			 * (!pos.equals(QueriesReader.NULL_POS) && !pos.equals(term)) {
+			 * currentPattern[from] = "pos:" + pos; enumeratePatterns(queryInfo,
+			 * currentPattern, initNeIndex, from + 1); }
+			 */
 			// or a NE
 			if (from > initNeIndex) {
 				String ne = queryInfo.getNamedEntities().get(from);
