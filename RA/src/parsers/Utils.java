@@ -1,30 +1,31 @@
 package parsers;
 
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import rankinggraph.QueriesReader;
+import rankinggraph.RawQueriesReader;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.process.PTBTokenizer;
 
 public class Utils {
 
-	public static String[] tokenize(String str) {
+	public static List<String> tokenize(String str) {
 		StringReader reader = new StringReader(str);
 		PTBTokenizer<Word> tokenizer = PTBTokenizer.newPTBTokenizer(reader);
 		List<Word> toks = tokenizer.tokenize();
-		String[] tokArray = new String[toks.size()];
-		int i = 0;
+		List<String> tokStrList = new ArrayList<String>(toks.size());
 		for (Word t : toks)
-			tokArray[i++] = t.word();
-		return tokArray;
+			tokStrList.add(t.word());
+		return tokStrList;
 	}
 
 	public static String glueTokens(String[] toks) {
@@ -37,7 +38,7 @@ public class Utils {
 		PrintWriter pw = new PrintWriter(outputFile);
 		String line = null;
 		while ((line = br.readLine()) != null) {
-			pw.println(tokenize(line).length);
+			pw.println(tokenize(line).size());
 		}
 		pw.close();
 		br.close();
@@ -50,7 +51,7 @@ public class Utils {
 		BufferedReader br = new BufferedReader(new FileReader(posFilePath));
 		String line = null;
 		while ((line = br.readLine()) != null) {
-			String[] poses = tokenize(line);
+			List<String> poses = tokenize(line);
 			for (String p : poses) {
 				Integer count = posCoutMap.get(p);
 				if (count == null)
@@ -74,9 +75,9 @@ public class Utils {
 		String line = null;
 		int numNE = 0;
 		while ((line = br.readLine()) != null) {
-			String[] toks = tokenize(line);
+			List<String> toks = tokenize(line);
 			for (String t : toks) {
-				if (!t.equals(QueriesReader.NULL_NE)) {
+				if (!t.equals(RawQueriesReader.NULL_NE)) {
 					numNE++;
 				}
 			}
@@ -88,16 +89,13 @@ public class Utils {
 	}
 
 	public static void main(String[] args) throws IOException {
-		String[] tkns = tokenize("q1 ne-q2 q3 pos-q4");
-		for(String t:tkns)
-			System.out.println(t);
-//		numNamedEntities("data/AITS/v1/v1_ATIS0_NER_7class_s2.txt",
-//				"data/AITS/v1/stats/7class-ne-per-q.txt");
-//		
-//		queryLength("data/AITS/v1/v1_ATIS0-Queries.txt",
-//				"data/AITS/v1/stats/q-leng.txt");
-//		
-//		numUniquePOS("data/AITS/v1/v1_ATIS0_POS_s2.txt",
-//				"data/AITS/v1/stats/pos-freq.txt");
+		// numNamedEntities("data/AITS/v1/v1_ATIS0_NER_7class_s2.txt",
+		// "data/AITS/v1/stats/7class-ne-per-q.txt");
+		//
+		// queryLength("data/AITS/v1/v1_ATIS0-Queries.txt",
+		// "data/AITS/v1/stats/q-leng.txt");
+		//
+		// numUniquePOS("data/AITS/v1/v1_ATIS0_POS_s2.txt",
+		// "data/AITS/v1/stats/pos-freq.txt");
 	}
 }

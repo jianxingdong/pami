@@ -5,7 +5,8 @@ import java.io.PrintWriter;
 
 import parsers.Utils;
 
-import rankinggraph.QueriesReader;
+import rankinggraph.ParsedQueryReader;
+
 import rankinggraph.QueryInfo;
 
 public class PatternsGenerationDriver implements PatternGenerationNotifiable {
@@ -26,13 +27,14 @@ public class PatternsGenerationDriver implements PatternGenerationNotifiable {
 	 * @param neFilePath
 	 *            : named entities file
 	 * @throws IOException
+	 * @throws ClassNotFoundException
 	 */
-	public void generatePatterns(String queriesFilePath, String posFilePath,
-			String neFilePath, String outputFilePath) throws IOException {
+	public void generatePatterns(String parsedQueriesFile, String outputFilePath)
+			throws IOException, ClassNotFoundException {
 
 		patternsWriter = new PrintWriter(outputFilePath);
-		QueriesReader queriesReader = new QueriesReader(queriesFilePath,
-				posFilePath, neFilePath);
+		ParsedQueryReader queriesReader = new ParsedQueryReader(
+				parsedQueriesFile);
 		QueryInfo query = null;
 		int count = 0;
 		while ((query = queriesReader.next()) != null) {
@@ -52,13 +54,13 @@ public class PatternsGenerationDriver implements PatternGenerationNotifiable {
 	/**
 	 * 
 	 * @param args
-	 *            : {queriesFilePath, posFilePath, neFilePath, outputFilePath}
+	 *            : {parsedQueriesFile, outputFilePath}
 	 */
 	public static void main(String[] args) {
 		PatternsGenerationDriver driver = new PatternsGenerationDriver();
 		try {
-			driver.generatePatterns(args[0], args[1], args[2], args[3]);
-		} catch (IOException e) {
+			driver.generatePatterns(args[0], args[1]);
+		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}

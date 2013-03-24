@@ -1,9 +1,38 @@
 package rankinggraph;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class QueryInfo {
+public class QueryInfo implements Serializable {
 
+	public static class QueriesAnnotationFiles {
+		private String queriesFilePath, posFilePath, neFilePath;
+
+		public QueriesAnnotationFiles(String queriesFilePath,
+				String posFilePath, String neFilePath) {
+			this.queriesFilePath = queriesFilePath;
+			this.posFilePath = posFilePath;
+			this.neFilePath = neFilePath;
+		}
+
+		public String getQueriesFilePath() {
+			return queriesFilePath;
+		}
+
+		public String getPosFilePath() {
+			return posFilePath;
+		}
+
+		public String getNeFilePath() {
+			return neFilePath;
+		}
+
+	}
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int numTerms;
 	private String[] queryTerms, partOfSpeeches;
 
@@ -37,4 +66,5 @@ public class QueryInfo {
 	public void setNamedEntities(HashMap<Integer, String> namedEntities) {
 		this.namedEntities = namedEntities;
 	}
+
 }

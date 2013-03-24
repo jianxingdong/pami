@@ -6,10 +6,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.List;
 
-import rankinggraph.QueriesReader;
+import rankinggraph.ParsedQueryReader;
 import rankinggraph.QueryInfo;
 
 public class ScoringDriver {
@@ -29,13 +28,14 @@ public class ScoringDriver {
 	 * @param patternsFile
 	 * @param outputFile
 	 * @throws IOException
+	 * @throws ClassNotFoundException
 	 */
-	public void buildeQueryPatternGraph(String queryFilePath,
-			String posFilePath, String neFilePath, String patternsFile,
-			String outputFile) throws IOException {
+	public void buildeQueryPatternGraph(String parsedQueriesFile,
+			String patternsFile, String outputFile) throws IOException,
+			ClassNotFoundException {
 
-		QueriesReader queriesReader = new QueriesReader(queryFilePath,
-				posFilePath, neFilePath);
+		ParsedQueryReader queriesReader = new ParsedQueryReader(
+				parsedQueriesFile);
 		QueryInfo queryInfo = null;
 		String pattern = null;
 		BufferedReader patternsReader = new BufferedReader(new FileReader(
@@ -62,9 +62,10 @@ public class ScoringDriver {
 					numMatches++;
 				}
 				pId++;
+
 			}
 			System.out.println(qId + "\t" + numMatches);
-			qId++;
+			qId++;			
 		}
 
 		graphWriter.close();
@@ -75,14 +76,13 @@ public class ScoringDriver {
 	/**
 	 * 
 	 * @param args
-	 *            : {queryFilePath, posFilePath, neFilePath, patternsFile,
-	 *            outputFile}
+	 *            : {parsedQueriesFile, patternsFile, outputFile}
 	 */
 	public static void main(String[] args) {
 		try {
 			new ScoringDriver().buildeQueryPatternGraph(args[0], args[1],
-					args[2], args[3], args[4]);
-		} catch (IOException e) {
+					args[2]);
+		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
