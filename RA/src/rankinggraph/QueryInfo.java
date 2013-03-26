@@ -2,6 +2,7 @@ package rankinggraph;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 public class QueryInfo implements Serializable {
 
@@ -67,4 +68,19 @@ public class QueryInfo implements Serializable {
 		this.namedEntities = namedEntities;
 	}
 
+	/**
+	 * 
+	 * @param namedEntity
+	 * @param startMatchFrom
+	 * @return -1 if not found
+	 */
+	public int getNamedEntityIndex(String namedEntity, int startMatchFrom) {
+		for (Map.Entry<Integer, String> neEntry : namedEntities.entrySet()) {
+			if (neEntry.getKey() >= startMatchFrom
+					&& namedEntity.equals(neEntry.getValue())) {
+				return neEntry.getKey();
+			}
+		}
+		return -1;
+	}
 }

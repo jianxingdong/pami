@@ -17,6 +17,13 @@ import edu.stanford.nlp.process.PTBTokenizer;
 
 public class Utils {
 
+	public static int find(String[] array, String value, int from) {
+		for (; from < array.length; from++)
+			if (array[from].equals(value))
+				return from;
+		return -1;
+	}
+
 	public static List<String> tokenize(String str) {
 		StringReader reader = new StringReader(str);
 		PTBTokenizer<Word> tokenizer = PTBTokenizer.newPTBTokenizer(reader);
