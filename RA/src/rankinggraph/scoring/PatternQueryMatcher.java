@@ -4,7 +4,7 @@ import java.util.List;
 
 import parsers.Utils;
 import rankinggraph.QueryInfo;
-import rankinggraph.patterngeneration.QueryPatternsGenerator;
+import rankinggraph.patterngeneration.TagsCombinationGenerator;
 
 public class PatternQueryMatcher {
 
@@ -23,11 +23,11 @@ public class PatternQueryMatcher {
 		int numTokens = patternTokens.size();
 		for (int i = 0; i < numTokens; i++) {
 			if (patternTokens.get(i).startsWith(
-					QueryPatternsGenerator.POS_PREFIX)) {
+					TagsCombinationGenerator.POS_PREFIX)) {
 				queryToken = query.getPartOfSpeeches()[i];
 				patternToken = patternTokens.get(i).substring(4);
 			} else if (patternTokens.get(i).startsWith(
-					QueryPatternsGenerator.NE_PREFIX)) {
+					TagsCombinationGenerator.NE_PREFIX)) {
 				queryToken = query.getNamedEntities().get(i);
 				patternToken = patternTokens.get(i).substring(3);
 			} else {
@@ -43,7 +43,8 @@ public class PatternQueryMatcher {
 	}
 
 	public float getEditDistanceScore(String pattern, QueryInfo query) {
-		// TODO edit distance, lower-case, normalize by query length
+		//TODO EditDistance
+		
 		return 0;
 	}
 

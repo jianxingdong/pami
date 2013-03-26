@@ -12,10 +12,11 @@ import rankinggraph.QueryInfo;
 public class PatternsGenerationDriver implements PatternGenerationNotifiable {
 
 	private PrintWriter patternsWriter;
-	private QueryPatternsGenerator patternsGenerator;
+	private AbstractPatternGenerator patternsGenerator;
 
 	public PatternsGenerationDriver() {
-		patternsGenerator = new QueryPatternsGenerator(this);
+		//patternsGenerator = new TagsCombinationGenerator(this);
+		patternsGenerator = new  NGramPatternGenerator(this);
 	}
 
 	/**

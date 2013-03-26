@@ -1,6 +1,5 @@
 package parsers;
 
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import rankinggraph.RawQueriesReader;
+import rankinggraph.QueryParser;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.process.PTBTokenizer;
 
@@ -77,7 +76,7 @@ public class Utils {
 		while ((line = br.readLine()) != null) {
 			List<String> toks = tokenize(line);
 			for (String t : toks) {
-				if (!t.equals(RawQueriesReader.NULL_NE)) {
+				if (!t.equals(QueryParser.NULL_NE)) {
 					numNE++;
 				}
 			}

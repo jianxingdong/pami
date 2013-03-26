@@ -14,15 +14,14 @@ import rankinggraph.QueryInfo;
  * or a named entity. A valid pattern contains at least one named entity.
  * 
  */
-public class QueryPatternsGenerator {
+public class TagsCombinationGenerator extends AbstractPatternGenerator {
+
+	public TagsCombinationGenerator(
+			PatternGenerationNotifiable generationNotifiable) {
+		super(generationNotifiable);
+	}
 
 	private PatternGenerationNotifiable generationNotifiable;
-	public final static String NE_PREFIX = "ne-", POS_PREFIX = "pos-";
-
-	public QueryPatternsGenerator(
-			PatternGenerationNotifiable generationNotifiable) {
-		this.generationNotifiable = generationNotifiable;
-	}
 
 	public void generatePatterns(QueryInfo queryInfo) {
 		HashMap<Integer, String> namedEntities = queryInfo.getNamedEntities();
@@ -71,7 +70,7 @@ public class QueryPatternsGenerator {
 	}
 
 	public static void main(String[] args) {
-		QueryPatternsGenerator qpg = new QueryPatternsGenerator(
+		TagsCombinationGenerator qpg = new TagsCombinationGenerator(
 				new PatternsGenerationDriver());
 		QueryInfo qi = new QueryInfo();
 		qi.setQueryTerms(new String[] { "q1", "q2", "q3" });
