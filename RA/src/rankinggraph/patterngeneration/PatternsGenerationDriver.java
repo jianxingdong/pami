@@ -8,15 +8,19 @@ import parsers.Utils;
 import rankinggraph.ParsedQueryReader;
 
 import rankinggraph.QueryInfo;
+import rankinggraph.scoring.PatternMatchNotifiable;
 
-public class PatternsGenerationDriver implements PatternGenerationNotifiable {
+public class PatternsGenerationDriver implements PatternGenerationNotifiable,
+		PatternMatchNotifiable {
 
-	private PrintWriter patternsWriter;
+	private PrintWriter patternsWriter, matchesWriter;
 	private AbstractPatternGenerator patternsGenerator;
 
-	public PatternsGenerationDriver() {
-		//patternsGenerator = new TagsCombinationGenerator(this);
-		patternsGenerator = new  NGramPatternGenerator(this);
+	public PatternsGenerationDriver(String parsedQueriesFile) throws Exception {
+		// patternsGenerator = new TagsCombinationGenerator(this);
+		// patternsGenerator = new NGramPatternGenerator(this);
+		patternsGenerator = new PrunedNGramGenerator(this, parsedQueriesFile,
+				this);
 	}
 
 	/**
@@ -30,10 +34,12 @@ public class PatternsGenerationDriver implements PatternGenerationNotifiable {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public void generatePatterns(String parsedQueriesFile, String outputFilePath)
-			throws IOException, ClassNotFoundException {
+	public void generatePatterns(String parsedQueriesFile,
+			String outputFilePath, String matchesFile) throws IOException,
+			ClassNotFoundException {
 
 		patternsWriter = new PrintWriter(outputFilePath);
+		matchesWriter = new PrintWriter(matchesFile);
 		ParsedQueryReader queriesReader = new ParsedQueryReader(
 				parsedQueriesFile);
 		QueryInfo query = null;
@@ -44,6 +50,7 @@ public class PatternsGenerationDriver implements PatternGenerationNotifiable {
 		}
 		queriesReader.close();
 		patternsWriter.close();
+		matchesWriter.close();
 	}
 
 	@Override
@@ -55,14 +62,21 @@ public class PatternsGenerationDriver implements PatternGenerationNotifiable {
 	/**
 	 * 
 	 * @param args
-	 *            : {parsedQueriesFile, outputFilePath}
+	 *            : {parsedQueriesFile, outputFilePath, scoresFile}
+	 * @throws Exception
 	 */
-	public static void main(String[] args) {
-		PatternsGenerationDriver driver = new PatternsGenerationDriver();
+	public static void main(String[] args) throws Exception {
+		PatternsGenerationDriver driver = new PatternsGenerationDriver(args[0]);
 		try {
-			driver.generatePatterns(args[0], args[1]);
+			driver.generatePatterns(args[0], args[1], args[2]);
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void notifyMatch(int queryId, int patternId, float score) {
+		matchesWriter.println(queryId + "," + patternId + "," + score);
+
 	}
 }

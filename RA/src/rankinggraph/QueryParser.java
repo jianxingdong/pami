@@ -1,5 +1,6 @@
 package rankinggraph;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,14 +21,18 @@ public class QueryParser {
 
 	public QueryInfo parse(String query, String pos, String ne) {
 		List<String> queryTerms = Utils.tokenize(query);
-		List<String> partOfSpeeches = Utils.tokenize(pos);
+		int numTerms = queryTerms.size();
+		List<String> partOfSpeeches = new ArrayList<String>();
+		for (int i = 0; i < numTerms; i++)
+			partOfSpeeches.add(NULL_POS);
+		// TODO Utils.tokenize(pos); instead of the above 3 lines
 		List<String> namedEntities = Utils.tokenize(ne);
 
 		// delete tokens that are punctuation
 		normalizePunct(queryTerms, partOfSpeeches, namedEntities);
-		
-		//lowercase terms
-		
+
+		// lowercase terms
+
 		// stem query terms
 		stemQueryTerms(queryTerms);
 
@@ -149,5 +154,5 @@ public class QueryParser {
 				neTags.set(i, tmp.substring(0, in));
 		}
 	}
-	
+
 }

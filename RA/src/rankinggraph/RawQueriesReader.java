@@ -15,8 +15,9 @@ public class RawQueriesReader {
 
 		queriesReader = new BufferedReader(new FileReader(
 				queriesFiles.getQueriesFilePath()));
-		posReader = new BufferedReader(new FileReader(
+/*		posReader = new BufferedReader(new FileReader(
 				queriesFiles.getPosFilePath()));
+				*/
 		neReader = new BufferedReader(new FileReader(
 				queriesFiles.getNeFilePath()));
 		queryParser = new QueryParser();		
@@ -33,13 +34,13 @@ public class RawQueriesReader {
 			// EOF
 			return null;
 		}
-		return queryParser.parse(query, posReader.readLine(),
+		return queryParser.parse(query, "", //TODO POS line goes here
 				neReader.readLine());
 	}
 
 	public void close() throws IOException {
 		queriesReader.close();
-		posReader.close();
+		//posReader.close();
 		neReader.close();
 	}
 

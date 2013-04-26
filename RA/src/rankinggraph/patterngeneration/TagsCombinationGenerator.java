@@ -70,15 +70,14 @@ public class TagsCombinationGenerator extends AbstractPatternGenerator {
 	}
 
 	public static void main(String[] args) {
-		TagsCombinationGenerator qpg = new TagsCombinationGenerator(
-				new PatternsGenerationDriver());
-		QueryInfo qi = new QueryInfo();
-		qi.setQueryTerms(new String[] { "q1", "q2", "q3" });
-		qi.setPartOfSpeeches(new String[] { "p1", "p2", "p3" });
-		HashMap<Integer, String> nes = new HashMap<Integer, String>();
-		nes.put(1, "n2");
-		nes.put(2, "n3");
-		qi.setNamedEntities(nes);
-		qpg.generatePatterns(qi);
+		/*
+		 * TagsCombinationGenerator qpg = new TagsCombinationGenerator( new
+		 * PatternsGenerationDriver()); QueryInfo qi = new QueryInfo();
+		 * qi.setQueryTerms(new String[] { "q1", "q2", "q3" });
+		 * qi.setPartOfSpeeches(new String[] { "p1", "p2", "p3" });
+		 * HashMap<Integer, String> nes = new HashMap<Integer, String>();
+		 * nes.put(1, "n2"); nes.put(2, "n3"); qi.setNamedEntities(nes);
+		 * qpg.generatePatterns(qi);
+		 */
 	}
 }

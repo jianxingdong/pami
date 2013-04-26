@@ -12,7 +12,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.hadoop.stochasticsvd.SSVDSolver;
 
-import ca.uwaterloo.cpami.css.dataprep.CSVToSequenceFile;
+import ca.uwaterloo.cpami.css.dataprep.SequenceFileCSVConverter;
 import ca.uwaterloo.cpami.css.dataprep.SequenceFileToCSV;
 
 public class StochasticSVD {
@@ -32,7 +32,7 @@ public class StochasticSVD {
 		properties.load(FileSystem.get(new Configuration()).open(
 				new Path(args[0])));
 
-		CSVToSequenceFile.csvToSequenceFile(properties.getProperty("csvPath"),
+		SequenceFileCSVConverter.csvToSequenceFile(properties.getProperty("csvPath"),
 				properties.getProperty("csvSeparator"),
 				Integer.parseInt(properties.getProperty("colLength")),
 				properties.getProperty("sequenceFilePath"));
