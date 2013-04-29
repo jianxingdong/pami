@@ -2,6 +2,7 @@ package rankinggraph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import edu.stanford.nlp.process.Morphology;
@@ -41,7 +42,7 @@ public class QueryParser {
 
 		mergeConsecutiveNETerms(queryTerms, namedEntities);
 
-		HashMap<Integer, String> dectedNamedEntities = new HashMap<Integer, String>();
+		LinkedHashMap<Integer, String> dectedNamedEntities = new LinkedHashMap<Integer, String>();
 		// ignore null terms and named entities
 		ignoreNullTermsAndNE(queryTerms, partOfSpeeches, namedEntities,
 				dectedNamedEntities);

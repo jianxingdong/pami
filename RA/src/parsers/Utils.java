@@ -19,7 +19,7 @@ public class Utils {
 
 	public static int find(String[] array, String value, int from) {
 		for (; from < array.length; from++)
-			if (array[from].equals(value))
+			if (array[from].equalsIgnoreCase(value))
 				return from;
 		return -1;
 	}
@@ -92,6 +92,17 @@ public class Utils {
 		}
 		pw.close();
 		br.close();
+	}
+
+	public static List<String> loadLines(String file) throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		String line = null;
+		List<String> lines = new ArrayList<String>();
+		while ((line = reader.readLine()) != null) {
+			lines.add(line);
+		}
+		reader.close();
+		return lines;
 	}
 
 	public static void main(String[] args) throws IOException {

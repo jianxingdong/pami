@@ -1,7 +1,8 @@
 package rankinggraph;
 
+
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class QueryInfo implements Serializable {
@@ -37,7 +38,7 @@ public class QueryInfo implements Serializable {
 	private int numTerms;
 	private String[] queryTerms, partOfSpeeches;
 
-	private HashMap<Integer, String> namedEntities;
+	private LinkedHashMap<Integer, String> namedEntities;
 
 	public int getNumTerms() {
 		return this.numTerms;
@@ -60,15 +61,16 @@ public class QueryInfo implements Serializable {
 		this.partOfSpeeches = partOfSpeeches;
 	}
 
-	public HashMap<Integer, String> getNamedEntities() {
+	public LinkedHashMap<Integer, String> getNamedEntities() {
 		return namedEntities;
 	}
 
-	public void setNamedEntities(HashMap<Integer, String> namedEntities) {
+	public void setNamedEntities(LinkedHashMap<Integer, String> namedEntities) {
 		this.namedEntities = namedEntities;
 	}
 
 	/**
+	 * index of first occurrence
 	 * 
 	 * @param namedEntity
 	 * @param startMatchFrom

@@ -6,8 +6,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import rankinggraph.ParsedQueryReader;
-import rankinggraph.QueryInfo;
+import rankinggraph.scoring.NGramPatternMatcher;
 import rankinggraph.scoring.PatternQueryMatcher;
 
 public class PatternSupport {
@@ -56,4 +55,10 @@ public class PatternSupport {
 		queriesReader.close();
 	}
 
+	public static void main(String[] args) throws Exception {
+		PatternSupport ps = new PatternSupport(new NGramPatternMatcher(),
+				"data/Riccardi/parsed/v1_7class_parsedQ.bin");
+		BitSet s = ps.getSupport("saturday flight from las-vega to ne-LOC");
+		System.out.println(s.isEmpty());
+	}
 }

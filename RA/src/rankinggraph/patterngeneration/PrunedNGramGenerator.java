@@ -46,7 +46,11 @@ public class PrunedNGramGenerator extends AbstractPatternGenerator {
 		}
 		generationNotifiable.notifyPattern(fullPattern);
 		BitSet support = patternSupport.getSupport(glueTokens(fullPattern));
+		if (support.isEmpty()) {
+			throw new RuntimeException("Empty: " + glueTokens(fullPattern));
+		}
 		notifyMatches(patternId, support);
+		patternId++;
 
 		for (int numGrams = MIN_SIZE; numGrams < numTerms; numGrams++) {
 			for (int from = 0, to = numGrams - 1; to < numTerms; from++, to++) {
@@ -58,13 +62,16 @@ public class PrunedNGramGenerator extends AbstractPatternGenerator {
 						generationNotifiable.notifyPattern(subPattern);
 						notifyMatches(patternId, subPatternSupport);
 						patternId++;
+						if (subPatternSupport.isEmpty()) {
+							throw new RuntimeException("Empty: "
+									+ glueTokens(subPattern));
+						}
 
 					}
 				}
 
 			}
 		}
-		patternId++;
 	}
 
 	private void notifyMatches(int patternId, BitSet support) {
