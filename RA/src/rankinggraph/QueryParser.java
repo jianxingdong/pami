@@ -5,9 +5,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import edu.stanford.nlp.process.Morphology;
-
 import parsers.Utils;
+import edu.stanford.nlp.process.Morphology;
 
 public class QueryParser {
 
@@ -21,12 +20,15 @@ public class QueryParser {
 	}
 
 	public QueryInfo parse(String query, String pos, String ne) {
+
 		List<String> queryTerms = Utils.tokenize(query);
+
 		int numTerms = queryTerms.size();
 		List<String> partOfSpeeches = new ArrayList<String>();
 		for (int i = 0; i < numTerms; i++)
 			partOfSpeeches.add(NULL_POS);
 		// TODO Utils.tokenize(pos); instead of the above 3 lines
+
 		List<String> namedEntities = Utils.tokenize(ne);
 
 		// delete tokens that are punctuation
