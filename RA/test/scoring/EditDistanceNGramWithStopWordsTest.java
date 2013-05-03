@@ -22,7 +22,7 @@ public class EditDistanceNGramWithStopWordsTest {
 	@Test
 	public void q1() {
 		assertEquals(
-				1-0.5/6,
+				1f,
 				matcher.getMatchScore("from ne-LOC to ne-LOC on ne-ORG", query),
 				1e-5);
 	}
@@ -35,14 +35,14 @@ public class EditDistanceNGramWithStopWordsTest {
 
 	@Test
 	public void q3() {
-		assertEquals(1 - 2.5 / 11, matcher.getMatchScore(
-				"from xx ne-LOC to ne-LOC the the the the on ne-ORG", query),
+		assertEquals(1 -3f / 11, matcher.getMatchScore(
+				"from xxx ne-LOC to ne-LOC the the the the on ne-ORG", query),
 				1e-5);
 	}
 
 	@Test
 	public void q4() {
-		assertEquals(1 - 1f / 7, matcher.getMatchScore(
+		assertEquals(1 - 0.5f / 7, matcher.getMatchScore(
 				"the from ne-LOC to ne-LOC on ne-ORG", query), 1e-5);
 	}
 
@@ -57,5 +57,5 @@ public class EditDistanceNGramWithStopWordsTest {
 		assertEquals(1 - 1f / 7, matcher.getMatchScore(
 				"xxxx from ne-LOC to ne-LOC on ne-ORG", query), 1e-5);
 	}
-		
+
 }

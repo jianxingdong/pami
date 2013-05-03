@@ -6,11 +6,15 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import rankinggraph.scoring.EditDistanceNGramMatcher;
 import rankinggraph.scoring.NGramPatternMatcher;
 import rankinggraph.scoring.PatternQueryMatcher;
 
 public class PatternSupport {
+	public static final float MIN_MATCH_SCORE = 0.7f;
+
 	private List<QueryInfo> queries;
+
 	private PatternQueryMatcher matcher;
 	private int nQueries;
 
@@ -22,6 +26,9 @@ public class PatternSupport {
 		this.nQueries = queries.size();
 	}
 
+	// TODO this is a hack
+	public List<Float> scores = new ArrayList<Float>();
+
 	/**
 	 * 
 	 * @param pattern
@@ -29,11 +36,17 @@ public class PatternSupport {
 	 *         means the pattern matches the corresponding query.
 	 */
 	public BitSet getSupport(String pattern) {
+		scores.clear();
 		BitSet matchVctr = new BitSet(nQueries);
 		int i = 0;
 		for (QueryInfo queryInfo : queries) {
-			if (matcher.getMatchScore(pattern, queryInfo) == 1) {
+			float score = matcher.getMatchScore(pattern, queryInfo);
+			if (score < 0)
+				throw new RuntimeException("invalid score :" + score
+						+ " - pattern: " + pattern);
+			if (score >= MIN_MATCH_SCORE) {
 				matchVctr.set(i);
+				scores.add(score);
 			}
 			++i;
 		}
@@ -56,9 +69,11 @@ public class PatternSupport {
 	}
 
 	public static void main(String[] args) throws Exception {
-		PatternSupport ps = new PatternSupport(new NGramPatternMatcher(),
-				"data/Riccardi/parsed/v1_7class_parsedQ.bin");
-		BitSet s = ps.getSupport("saturday flight from las-vega to ne-LOC");
+		PatternSupport ps = new PatternSupport(new EditDistanceNGramMatcher(),
+				"data/Riccardi/parsed/newMatching/v1-ne-ParsedQ.bin");
+		BitSet s = ps
+				.getSupport("ne-cost_relative flight from ne-city_name ne-state_code");
+
 		System.out.println(s.isEmpty());
 	}
 }

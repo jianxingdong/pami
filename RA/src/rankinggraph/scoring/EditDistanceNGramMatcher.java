@@ -16,8 +16,11 @@ public class EditDistanceNGramMatcher implements PatternQueryMatcher {
 		if (patternLength == 0)
 			return 0;
 		float editDistance = computeLevenshteinDistance(patternTokens, query);
-		return 1 - editDistance / Math.min(patternLength, query.getNumTerms()); // TODO
-																				// revisit
+		float minLen = Math.min(patternLength, query.getNumTerms());
+		if (editDistance >= minLen)
+			return 0;
+		return 1 - editDistance / minLen; // TODO
+											// revisit
 	}
 
 	public float computeLevenshteinDistance(List<String> patternTokens,
@@ -27,8 +30,9 @@ public class EditDistanceNGramMatcher implements PatternQueryMatcher {
 		float[][] distance = new float[queryLen + 1][patternLen + 1];
 		int[][] path = new int[queryLen][patternLen];
 
-		for (int i = 0; i <= queryLen; i++)
-			distance[i][0] = i;
+		/*
+		 * for (int i = 0; i <= queryLen; i++) distance[i][0] = 0; //TODO
+		 */
 		for (int j = 1; j <= patternLen; j++)
 			distance[0][j] = j;
 
@@ -56,36 +60,21 @@ public class EditDistanceNGramMatcher implements PatternQueryMatcher {
 		}
 
 		float min = Integer.MAX_VALUE;
-		int indx = -1;
+		// int indx = -1;
 		for (int i = 1; i <= queryLen; i++) {
 			if (distance[i][patternLen] < min) {
 				min = distance[i][patternLen];
-				indx = i;
+				// indx = i;
 			}
 		}
-		// backtracking, searching for the first exact match in the matching
-		// path
-		int i = indx - 1, j = patternLen - 1;
-		int exctI = 0, exctJ = 0;
-		while (i >= 0 && j >= 0) {
-			switch (path[i][j]) {
-			case 3:
-				exctI = i;
-				exctJ = j;
-			case 0:
-				i--;
-				j--;
-				break;
-			case 1:
-				i--;
-				break;
-			case 2:
-				j--;
-				break;
-			}
-		}
-		int d = exctI - exctJ;
-		return min - d;
+		/*
+		 * // backtracking, searching for the first exact match in the matching
+		 * // path int i = indx - 1, j = patternLen - 1; int exctI = 0, exctJ =
+		 * 0; while (i >= 0 && j >= 0) { switch (path[i][j]) { case 3: exctI =
+		 * i; exctJ = j; case 0: i--; j--; break; case 1: i--; break; case 2:
+		 * j--; break; } } int d = exctI - exctJ;
+		 */
+		return min;// TODO- d;
 	}
 
 	private boolean matches(String patternToken, QueryInfo query,

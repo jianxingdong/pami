@@ -8,6 +8,8 @@ import java.util.Set;
 
 import rankinggraph.PatternSupport;
 import rankinggraph.QueryInfo;
+import rankinggraph.scoring.EditDistanceNGramMatcher;
+import rankinggraph.scoring.EditDistanceNGramWithStopWordsMatcher;
 import rankinggraph.scoring.NGramPatternMatcher;
 import rankinggraph.scoring.PatternMatchNotifiable;
 
@@ -23,8 +25,9 @@ public class PrunedNGramGenerator extends AbstractPatternGenerator {
 			String parsedQueriesFile,
 			PatternMatchNotifiable patternMatchNotifiable) throws Exception {
 		super(generationNotifiable);
-		patternSupport = new PatternSupport(new NGramPatternMatcher(),
-				parsedQueriesFile);
+		// TODO as a param
+		patternSupport = new PatternSupport(
+				new EditDistanceNGramWithStopWordsMatcher(), parsedQueriesFile);
 		this.patternMatchNotifiable = patternMatchNotifiable;
 	}
 
@@ -58,15 +61,14 @@ public class PrunedNGramGenerator extends AbstractPatternGenerator {
 				if (subPattern != null) {
 					BitSet subPatternSupport = patternSupport
 							.getSupport(glueTokens(subPattern));
-					if (!support.equals(subPatternSupport)) {
+					if (subPatternSupport.isEmpty()) {
+						throw new RuntimeException("Empty: "
+								+ glueTokens(subPattern));
+					}
+					if (true) { // TODO !support.equals(subPatternSupport)
 						generationNotifiable.notifyPattern(subPattern);
 						notifyMatches(patternId, subPatternSupport);
 						patternId++;
-						if (subPatternSupport.isEmpty()) {
-							throw new RuntimeException("Empty: "
-									+ glueTokens(subPattern));
-						}
-
 					}
 				}
 
@@ -75,9 +77,12 @@ public class PrunedNGramGenerator extends AbstractPatternGenerator {
 	}
 
 	private void notifyMatches(int patternId, BitSet support) {
+		// TODO this is a hack
+		int matchIndex = 0;
 		for (int i = support.nextSetBit(0); i >= 0; i = support
 				.nextSetBit(i + 1)) {
-			patternMatchNotifiable.notifyMatch(i, patternId, 1);
+			patternMatchNotifiable.notifyMatch(i, patternId,
+					this.patternSupport.scores.get(matchIndex++)); // this.patternSupport.scores.get(matchIndex++)
 		}
 
 	}
