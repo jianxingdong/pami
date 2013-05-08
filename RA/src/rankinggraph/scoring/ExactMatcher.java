@@ -15,10 +15,10 @@ public class ExactMatcher implements PatternQueryMatcher {
 	 * @return 1 if matches 0 if not
 	 */
 	@Override
-	public float getMatchScore(String pattern, QueryInfo query) {
+	public MatchingRecord getMatchScore(String pattern, QueryInfo query) {
 		List<String> patternTokens = Utils.tokenize(pattern);
 		if (patternTokens.size() != query.getNumTerms()) {
-			return 0;
+			return new MatchingRecord(0, null);
 		}
 		String queryToken = null, patternToken = null;
 		int numTokens = patternTokens.size();
@@ -37,10 +37,11 @@ public class ExactMatcher implements PatternQueryMatcher {
 			}
 
 			if (!patternToken.equalsIgnoreCase(queryToken)) {
-				return 0;
+				return new MatchingRecord(0, null);
+
 			}
 		}
-		return 1;
+		return new MatchingRecord(1, null);
 	}
 
 }

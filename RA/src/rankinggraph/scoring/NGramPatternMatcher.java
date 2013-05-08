@@ -15,12 +15,12 @@ public class NGramPatternMatcher implements PatternQueryMatcher {
 	 * return 1 if the pattern matches a substring of the query. 0 otherwise
 	 */
 	@Override
-	public float getMatchScore(String pattern, QueryInfo query) {
+	public MatchingRecord getMatchScore(String pattern, QueryInfo query) {
 		List<String> patternTokens = Utils.tokenize(pattern);
 
 		int numPatternTerms = patternTokens.size();
 		if (numPatternTerms == 0)
-			return 0;
+			return new MatchingRecord(0, null);
 		String firstToken = patternTokens.get(0);
 		int numQueryTerms = query.getNumTerms();
 		int startIndex = -1;
@@ -44,16 +44,16 @@ public class NGramPatternMatcher implements PatternQueryMatcher {
 			if (startIndex == -1
 					|| numQueryTerms - startIndex < numPatternTerms) {
 
-				return 0;
+				return new MatchingRecord(0, null);
 			}
 			// match
 			if (matches(patternTokens, query, startIndex + 1)) {
-				return 1;
+				return new MatchingRecord(1, null);
 			}
 
 			startMatchFrom = startIndex + 1;
 		} while (startMatchFrom < numQueryTerms);
-		return 0;
+		return new MatchingRecord(0, null);
 	}
 
 	/**

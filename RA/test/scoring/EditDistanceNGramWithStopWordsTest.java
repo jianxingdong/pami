@@ -7,6 +7,7 @@ import org.junit.Test;
 import rankinggraph.QueryInfo;
 import rankinggraph.QueryParser;
 import rankinggraph.scoring.EditDistanceNGramWithStopWordsMatcher;
+import rankinggraph.scoring.MatchingRecord;
 
 public class EditDistanceNGramWithStopWordsTest {
 
@@ -21,41 +22,50 @@ public class EditDistanceNGramWithStopWordsTest {
 
 	@Test
 	public void q1() {
-		assertEquals(
-				1f,
-				matcher.getMatchScore("from ne-LOC to ne-LOC on ne-ORG", query),
-				1e-5);
+		MatchingRecord match = matcher.getMatchScore(
+				"from ne-LOC to ne-LOC on ne-ORG", query);
+		System.out.println(match.getLinks());
+		assertEquals(1f, match.getMatchingScore(), 1e-5);
 	}
 
 	@Test
 	public void q2() {
-		assertEquals(1 - 2f / 3,
-				matcher.getMatchScore("dfsk dsfkjs dfskjh", query), 1e-5);
+		MatchingRecord match = matcher.getMatchScore("dfsk dsfkjs dfskjh",
+				query);
+		System.out.println(match.getLinks());
+		assertEquals(1 - 2f / 3, match.getMatchingScore(), 1e-5);
 	}
 
 	@Test
 	public void q3() {
-		assertEquals(1 -3f / 11, matcher.getMatchScore(
-				"from xxx ne-LOC to ne-LOC the the the the on ne-ORG", query),
-				1e-5);
+		MatchingRecord match = matcher.getMatchScore(
+				"from xxx ne-LOC to ne-LOC the the the the on ne-ORG", query);
+		System.out.println(match.getLinks());
+		assertEquals(1 - 3f / 11, match.getMatchingScore(), 1e-5);
 	}
 
 	@Test
 	public void q4() {
-		assertEquals(1 - 0.5f / 7, matcher.getMatchScore(
-				"the from ne-LOC to ne-LOC on ne-ORG", query), 1e-5);
+		MatchingRecord match = matcher.getMatchScore(
+				"the from ne-LOC to ne-LOC on ne-ORG", query);
+		System.out.println(match.getLinks());
+		assertEquals(1 - 0.5f / 7, match.getMatchingScore(), 1e-5);
 	}
 
 	@Test
 	public void q5() {
-		assertEquals(1 - 1f / 7, matcher.getMatchScore(
-				"from ne-LOC to ne-LOC ona ne-ORG the", query), 1e-5);
+		MatchingRecord match = matcher.getMatchScore(
+				"from ne-LOC to ne-LOC ona ne-ORG the", query);
+		System.out.println(match.getLinks());
+		assertEquals(1 - 1f / 7, match.getMatchingScore(), 1e-5);
 	}
 
 	@Test
 	public void q6() {
-		assertEquals(1 - 1f / 7, matcher.getMatchScore(
-				"xxxx from ne-LOC to ne-LOC on ne-ORG", query), 1e-5);
+		MatchingRecord match = matcher.getMatchScore(
+				"xxxx from ne-LOC to ne-LOC on ne-ORG", query);
+		System.out.println(match.getLinks());
+		assertEquals(1 - 1f / 7, match.getMatchingScore(), 1e-5);
 	}
 
 }

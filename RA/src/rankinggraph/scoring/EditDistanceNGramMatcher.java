@@ -9,18 +9,18 @@ import rankinggraph.patterngeneration.AbstractPatternGenerator;
 public class EditDistanceNGramMatcher implements PatternQueryMatcher {
 
 	@Override
-	public float getMatchScore(String pattern, QueryInfo query) {
+	public MatchingRecord getMatchScore(String pattern, QueryInfo query) {
 
 		List<String> patternTokens = Utils.tokenize(pattern);
 		int patternLength = patternTokens.size();
 		if (patternLength == 0)
-			return 0;
+			return new MatchingRecord(0, null);
+		;
 		float editDistance = computeLevenshteinDistance(patternTokens, query);
 		float minLen = Math.min(patternLength, query.getNumTerms());
 		if (editDistance >= minLen)
-			return 0;
-		return 1 - editDistance / minLen; // TODO
-											// revisit
+			return new MatchingRecord(0, null);
+		return new MatchingRecord(1 - editDistance / minLen, null);
 	}
 
 	public float computeLevenshteinDistance(List<String> patternTokens,

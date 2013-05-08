@@ -60,7 +60,7 @@ public class ScoringDriver {
 		while ((queryInfo = queriesReader.next()) != null) {
 			pId = 0;
 			for (String p : patterns) {
-				score = matcher.getMatchScore(p, queryInfo);
+				score = matcher.getMatchScore(p, queryInfo).getMatchingScore();
 				if (score == 1) {
 
 					graphWriter.println(qId + "," + pId + "," + score);

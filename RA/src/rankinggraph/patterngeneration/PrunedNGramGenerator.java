@@ -1,5 +1,6 @@
 package rankinggraph.patterngeneration;
 
+
 import static parsers.Utils.glueTokens;
 
 import java.util.BitSet;
@@ -8,9 +9,7 @@ import java.util.Set;
 
 import rankinggraph.PatternSupport;
 import rankinggraph.QueryInfo;
-import rankinggraph.scoring.EditDistanceNGramMatcher;
 import rankinggraph.scoring.EditDistanceNGramWithStopWordsMatcher;
-import rankinggraph.scoring.NGramPatternMatcher;
 import rankinggraph.scoring.PatternMatchNotifiable;
 
 public class PrunedNGramGenerator extends AbstractPatternGenerator {

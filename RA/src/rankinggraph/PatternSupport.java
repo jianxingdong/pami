@@ -7,7 +7,6 @@ import java.util.BitSet;
 import java.util.List;
 
 import rankinggraph.scoring.EditDistanceNGramMatcher;
-import rankinggraph.scoring.NGramPatternMatcher;
 import rankinggraph.scoring.PatternQueryMatcher;
 
 public class PatternSupport {
@@ -40,7 +39,8 @@ public class PatternSupport {
 		BitSet matchVctr = new BitSet(nQueries);
 		int i = 0;
 		for (QueryInfo queryInfo : queries) {
-			float score = matcher.getMatchScore(pattern, queryInfo);
+			float score = matcher.getMatchScore(pattern, queryInfo)
+					.getMatchingScore();
 			if (score < 0)
 				throw new RuntimeException("invalid score :" + score
 						+ " - pattern: " + pattern);
