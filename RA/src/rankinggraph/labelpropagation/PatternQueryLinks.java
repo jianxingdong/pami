@@ -1,4 +1,4 @@
-package rankinggraph.scoring;
+package rankinggraph.labelpropagation;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -8,18 +8,15 @@ import java.util.HashMap;
  * links of the exact matching indexes between a pattern and a query
  * 
  */
+@SuppressWarnings("serial")
 public class PatternQueryLinks implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 	private HashMap<Integer, Integer> queryToPattern, patternToQuery;
 
 	public PatternQueryLinks(int patternLength, int queryLength) {
-		int initCapacity = Math.min(patternLength, queryLength);
-		queryToPattern = new HashMap<Integer, Integer>(initCapacity);
-		patternToQuery = new HashMap<Integer, Integer>(initCapacity);
+		queryToPattern = new HashMap<Integer, Integer>();
+		patternToQuery = new HashMap<Integer, Integer>();
+
 	}
 
 	public void addLink(int queryIndex, int patternIndex) {
@@ -51,4 +48,5 @@ public class PatternQueryLinks implements Serializable {
 	public String toString() {
 		return "queries: " + queryToPattern + ", patterns: " + patternToQuery;
 	}
+
 }

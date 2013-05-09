@@ -33,7 +33,8 @@ public class PatternSetCoverage {
 		for (String pattern : patterns) {
 			matched = new ArrayList<QueryInfo>();
 			for (QueryInfo q : queries) {
-				if (matcher.getMatchScore(pattern, q).getMatchingScore() == 1) {
+				if (matcher.getMatchScore(Utils.tokenize(pattern), q)
+						.getMatchingScore() == 1) {
 					matched.add(q);
 				}
 			}

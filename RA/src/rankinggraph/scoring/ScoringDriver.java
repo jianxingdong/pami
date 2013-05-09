@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import parsers.Utils;
+
 import rankinggraph.ParsedQueryReader;
 import rankinggraph.QueryInfo;
 
@@ -57,10 +59,12 @@ public class ScoringDriver {
 
 		int numMatches = 0;
 		float score = 0;
+
 		while ((queryInfo = queriesReader.next()) != null) {
 			pId = 0;
 			for (String p : patterns) {
-				score = matcher.getMatchScore(p, queryInfo).getMatchingScore();
+				score = matcher.getMatchScore(Utils.tokenize(p), queryInfo)
+						.getMatchingScore();
 				if (score == 1) {
 
 					graphWriter.println(qId + "," + pId + "," + score);

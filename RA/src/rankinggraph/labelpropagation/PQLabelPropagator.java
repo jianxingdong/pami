@@ -1,6 +1,5 @@
 package rankinggraph.labelpropagation;
 
-import rankinggraph.scoring.PatternQueryLinks;
 
 /**
  * 

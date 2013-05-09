@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import rankinggraph.scoring.EditDistanceNGramMatcher;
+import parsers.Utils;
+
+import rankinggraph.labelpropagation.MatchingRecord;
+import rankinggraph.scoring.PatternMatchNotifiable;
 import rankinggraph.scoring.PatternQueryMatcher;
 
 public class PatternSupport {
@@ -17,16 +20,39 @@ public class PatternSupport {
 	private PatternQueryMatcher matcher;
 	private int nQueries;
 
-	public PatternSupport(PatternQueryMatcher matcher, String parsedQueriesFile)
+	private PatternMatchNotifiable matchNotifiable;
+
+	public PatternSupport(PatternQueryMatcher matcher,
+			String parsedQueriesFile, PatternMatchNotifiable matchNotifiable)
 			throws Exception {
 		this.matcher = matcher;
 		queries = new ArrayList<QueryInfo>();
 		loadQueries(parsedQueriesFile);
 		this.nQueries = queries.size();
+		this.matchNotifiable = matchNotifiable;
 	}
 
-	// TODO this is a hack
-	public List<Float> scores = new ArrayList<Float>();
+	public void match(int patternId, List<String> patternTokens) {
+		int i = 0;
+		for (QueryInfo queryInfo : queries) {
+			MatchingRecord m = matcher.getMatchScore(patternTokens, queryInfo);
+			float score = m.getMatchingScore();
+			if (score < 0)
+				throw new RuntimeException("invalid score :"
+						+ score
+						+ " - pattern: "
+						+ Utils.glueTokens(patternTokens
+								.toArray(new String[] {})));
+			if (score >= MIN_MATCH_SCORE) {
+				m.setQueryId(i);
+				m.setPatternId(patternId);
+				m.setPatternLength(patternTokens.size());
+				m.setQueryId(queryInfo.getNumTerms());
+				matchNotifiable.notifyMatch(m);
+			}
+			++i;
+		}
+	}
 
 	/**
 	 * 
@@ -34,19 +60,22 @@ public class PatternSupport {
 	 * @return BitSet: a vector of bits of length equals to number of queries. 1
 	 *         means the pattern matches the corresponding query.
 	 */
-	public BitSet getSupport(String pattern) {
-		scores.clear();
+	@SuppressWarnings("unused")
+	private BitSet getSupport(int patternId, List<String> patternTokens) {
+		// TODO to be revisited
 		BitSet matchVctr = new BitSet(nQueries);
 		int i = 0;
 		for (QueryInfo queryInfo : queries) {
-			float score = matcher.getMatchScore(pattern, queryInfo)
-					.getMatchingScore();
+			MatchingRecord m = matcher.getMatchScore(patternTokens, queryInfo);
+			float score = m.getMatchingScore();
 			if (score < 0)
-				throw new RuntimeException("invalid score :" + score
-						+ " - pattern: " + pattern);
+				throw new RuntimeException("invalid score :"
+						+ score
+						+ " - pattern: "
+						+ Utils.glueTokens(patternTokens
+								.toArray(new String[] {})));
 			if (score >= MIN_MATCH_SCORE) {
 				matchVctr.set(i);
-				scores.add(score);
 			}
 			++i;
 		}
@@ -68,12 +97,4 @@ public class PatternSupport {
 		queriesReader.close();
 	}
 
-	public static void main(String[] args) throws Exception {
-		PatternSupport ps = new PatternSupport(new EditDistanceNGramMatcher(),
-				"data/Riccardi/parsed/newMatching/v1-ne-ParsedQ.bin");
-		BitSet s = ps
-				.getSupport("ne-cost_relative flight from ne-city_name ne-state_code");
-
-		System.out.println(s.isEmpty());
-	}
 }

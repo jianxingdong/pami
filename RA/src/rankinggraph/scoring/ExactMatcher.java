@@ -2,8 +2,8 @@ package rankinggraph.scoring;
 
 import java.util.List;
 
-import parsers.Utils;
 import rankinggraph.QueryInfo;
+import rankinggraph.labelpropagation.MatchingRecord;
 import rankinggraph.patterngeneration.TagsCombinationGenerator;
 
 public class ExactMatcher implements PatternQueryMatcher {
@@ -15,8 +15,8 @@ public class ExactMatcher implements PatternQueryMatcher {
 	 * @return 1 if matches 0 if not
 	 */
 	@Override
-	public MatchingRecord getMatchScore(String pattern, QueryInfo query) {
-		List<String> patternTokens = Utils.tokenize(pattern);
+	public MatchingRecord getMatchScore(List<String> patternTokens,
+			QueryInfo query) {
 		if (patternTokens.size() != query.getNumTerms()) {
 			return new MatchingRecord(0, null);
 		}
@@ -41,6 +41,7 @@ public class ExactMatcher implements PatternQueryMatcher {
 
 			}
 		}
+		// TODO find links
 		return new MatchingRecord(1, null);
 	}
 

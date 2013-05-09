@@ -1,38 +1,29 @@
 package rankinggraph.patterngeneration;
 
-
-import static parsers.Utils.glueTokens;
-
-import java.util.BitSet;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
 import rankinggraph.PatternSupport;
 import rankinggraph.QueryInfo;
-import rankinggraph.scoring.EditDistanceNGramWithStopWordsMatcher;
 import rankinggraph.scoring.PatternMatchNotifiable;
+import rankinggraph.scoring.PatternQueryMatcher;
 
 public class PrunedNGramGenerator extends AbstractPatternGenerator {
 
 	private PatternSupport patternSupport;
 	private final static int MIN_SIZE = 5;
 
-	private PatternMatchNotifiable patternMatchNotifiable;
-
 	public PrunedNGramGenerator(
 			PatternGenerationNotifiable generationNotifiable,
 			String parsedQueriesFile,
-			PatternMatchNotifiable patternMatchNotifiable) throws Exception {
+			PatternMatchNotifiable patternMatchNotifiable,
+			PatternQueryMatcher matcher) throws Exception {
 		super(generationNotifiable);
-		// TODO as a param
-		patternSupport = new PatternSupport(
-				new EditDistanceNGramWithStopWordsMatcher(), parsedQueriesFile);
-		this.patternMatchNotifiable = patternMatchNotifiable;
+		patternSupport = new PatternSupport(matcher, parsedQueriesFile,
+				patternMatchNotifiable);
 	}
 
-	private int patternId = 0;
-
-	// TODO print matches
 	@Override
 	public void generatePatterns(QueryInfo queryInfo) {
 		int numTerms = queryInfo.getNumTerms();
@@ -46,46 +37,47 @@ public class PrunedNGramGenerator extends AbstractPatternGenerator {
 		for (int k : keys) {
 			fullPattern[k] = NE_PREFIX + namedEntities.get(k);
 		}
-		generationNotifiable.notifyPattern(fullPattern);
-		BitSet support = patternSupport.getSupport(glueTokens(fullPattern));
-		if (support.isEmpty()) {
-			throw new RuntimeException("Empty: " + glueTokens(fullPattern));
-		}
-		notifyMatches(patternId, support);
-		patternId++;
+		int patternId = generationNotifiable.notifyPattern(fullPattern);
+		/*
+		 * BitSet support = patternSupport.getSupport(patternId,
+		 * glueTokens(fullPattern)); if (support.isEmpty()) { throw new
+		 * RuntimeException("Empty: " + glueTokens(fullPattern)); }
+		 * notifyMatches(patternId, support);
+		 */
+		patternSupport.match(patternId, Arrays.asList(fullPattern));
 
 		for (int numGrams = MIN_SIZE; numGrams < numTerms; numGrams++) {
 			for (int from = 0, to = numGrams - 1; to < numTerms; from++, to++) {
 				String[] subPattern = getSubPattern(fullPattern, from, to);
 				if (subPattern != null) {
-					BitSet subPatternSupport = patternSupport
-							.getSupport(glueTokens(subPattern));
-					if (subPatternSupport.isEmpty()) {
-						throw new RuntimeException("Empty: "
-								+ glueTokens(subPattern));
-					}
-					if (true) { // TODO !support.equals(subPatternSupport)
-						generationNotifiable.notifyPattern(subPattern);
-						notifyMatches(patternId, subPatternSupport);
-						patternId++;
-					}
+					patternId = generationNotifiable.notifyPattern(subPattern);
+					patternSupport.match(patternId, Arrays.asList(fullPattern));
+
+					/*
+					 * BitSet subPatternSupport = patternSupport.getSupport(
+					 * patternId, glueTokens(subPattern)); if
+					 * (subPatternSupport.isEmpty()) { throw new
+					 * RuntimeException("Empty: " + glueTokens(subPattern)); }
+					 * if (true) { // TODO !support.equals(subPatternSupport)
+					 * generationNotifiable.notifyPattern(subPattern);
+					 * notifyMatches(patternId, subPatternSupport); patternId++;
+					 * }
+					 */
 				}
 
 			}
 		}
 	}
 
-	private void notifyMatches(int patternId, BitSet support) {
-		// TODO this is a hack
-		int matchIndex = 0;
-		for (int i = support.nextSetBit(0); i >= 0; i = support
-				.nextSetBit(i + 1)) {
-			patternMatchNotifiable.notifyMatch(i, patternId,
-					this.patternSupport.scores.get(matchIndex++)); // this.patternSupport.scores.get(matchIndex++)
-		}
-
-	}
-
+	/*
+	 * private void notifyMatches(int patternId, BitSet support) { // TODO this
+	 * is a hack int matchIndex = 0; for (int i = support.nextSetBit(0); i >= 0;
+	 * i = support .nextSetBit(i + 1)) { patternMatchNotifiable.notifyMatch(i,
+	 * patternId, this.patternSupport.matches.get(matchIndex++)); //
+	 * this.patternSupport.scores.get(matchIndex++) }
+	 * 
+	 * }
+	 */
 	/**
 	 * 
 	 * @param pattern

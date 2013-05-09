@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import parsers.Utils;
+
 import rankinggraph.QueryInfo;
 import rankinggraph.QueryParser;
 import rankinggraph.scoring.EditDistanceNGramMatcher;
@@ -26,15 +28,19 @@ public class EditDistanceNGramTest {
 
 	@Test
 	public void q1() {
-		assertEquals(1f,
-				matcher.getMatchScore("from ne-LOC to ne-LOC on ne-ORG", query)
-						.getMatchingScore(), 1e-5);
+		assertEquals(
+				1f,
+				matcher.getMatchScore(
+						Utils.tokenize("from ne-LOC to ne-LOC on ne-ORG"),
+						query).getMatchingScore(), 1e-5);
 	}
 
 	@Test
 	public void q2() {
-		assertEquals(0, matcher.getMatchScore("dfsk dsfkjs dfskjh", query)
-				.getMatchingScore(), 1e-5);
+		assertEquals(
+				0,
+				matcher.getMatchScore(Utils.tokenize("dfsk dsfkjs dfskjh"),
+						query).getMatchingScore(), 1e-5);
 	}
 
 	@Test
@@ -42,7 +48,7 @@ public class EditDistanceNGramTest {
 		assertEquals(
 				1 - 5f / 11,
 				matcher.getMatchScore(
-						"from xx ne-LOC to ne-LOC the the the the on ne-ORG",
+						Utils.tokenize("from xx ne-LOC to ne-LOC the the the the on ne-ORG"),
 						query).getMatchingScore(), 1e-5);
 	}
 
@@ -50,7 +56,8 @@ public class EditDistanceNGramTest {
 	public void q4() {
 		assertEquals(
 				1 - 1f / 7,
-				matcher.getMatchScore("the from ne-LOC to ne-LOC on ne-ORG",
+				matcher.getMatchScore(
+						Utils.tokenize("the from ne-LOC to ne-LOC on ne-ORG"),
 						query).getMatchingScore(), 1e-5);
 	}
 
@@ -58,7 +65,8 @@ public class EditDistanceNGramTest {
 	public void q5() {
 		assertEquals(
 				1 - 2f / 7,
-				matcher.getMatchScore("from ne-LOC to ne-LOC ona ne-ORG the",
+				matcher.getMatchScore(
+						Utils.tokenize("from ne-LOC to ne-LOC ona ne-ORG the"),
 						query).getMatchingScore(), 1e-5);
 	}
 
@@ -66,7 +74,8 @@ public class EditDistanceNGramTest {
 	public void q6() {
 		assertEquals(
 				1 - 1f / 7,
-				matcher.getMatchScore("xxxx from ne-LOC to ne-LOC on ne-ORG",
+				matcher.getMatchScore(
+						Utils.tokenize("xxxx from ne-LOC to ne-LOC on ne-ORG"),
 						query).getMatchingScore(), 1e-5);
 	}
 	/*

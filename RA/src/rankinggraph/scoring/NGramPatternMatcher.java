@@ -5,6 +5,7 @@ import java.util.List;
 import parsers.Utils;
 import rankinggraph.QueryInfo;
 import rankinggraph.QueryParser;
+import rankinggraph.labelpropagation.MatchingRecord;
 import rankinggraph.patterngeneration.AbstractPatternGenerator;
 
 //TODO the matching can be made faster, e.g. linkedhashmap if ne's
@@ -15,9 +16,8 @@ public class NGramPatternMatcher implements PatternQueryMatcher {
 	 * return 1 if the pattern matches a substring of the query. 0 otherwise
 	 */
 	@Override
-	public MatchingRecord getMatchScore(String pattern, QueryInfo query) {
-		List<String> patternTokens = Utils.tokenize(pattern);
-
+	public MatchingRecord getMatchScore(List<String> patternTokens,
+			QueryInfo query) {
 		int numPatternTerms = patternTokens.size();
 		if (numPatternTerms == 0)
 			return new MatchingRecord(0, null);
@@ -91,7 +91,7 @@ public class NGramPatternMatcher implements PatternQueryMatcher {
 		String pattern = "from ne-LOC to ne-LOC on ne-ORG";
 		String q = "All flight from Atlanta to San Francisco on Delta first class please.", pos = "DT NNS IN NNP TO NNP NNP IN NNP JJ NN VB .", ne = "O O O LOC-B O LOC-B LOC-I O ORG-B O O O O";
 		QueryInfo query = new QueryParser().parse(q, pos, ne);
-		System.out.println(new NGramPatternMatcher().getMatchScore(pattern,
-				query));
+		System.out.println(new NGramPatternMatcher().getMatchScore(
+				Utils.tokenize(pattern), query));
 	}
 }
